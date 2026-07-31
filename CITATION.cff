@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+title: "Arcanum: AI-First Research Infrastructure"
+message: "If you use this framework, please cite it using the metadata from this file."
+type: software
+authors:
+  - family-names: Anderson
+    given-names: Nicholas
+repository-code: "https://github.com/andenick/arcanum-workspace"
+license: MIT
+version: "6.0"
+date-released: "2026-06-30"
