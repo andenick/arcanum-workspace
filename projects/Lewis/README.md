@@ -1,9 +1,7 @@
 # International Economics Analysis Platform
 
-**Status**: Production Ready ✅
-**Version**: 2.0
-**Last Updated**: October 6, 2025
-**Type**: Comprehensive International Economics Research Platform
+**Status**: Research showcase — reference implementation
+**Type**: International Economics Research Platform
 
 ---
 
@@ -17,11 +15,11 @@ A unified platform for international economics analysis combining Balance of Pay
 
 ## Quick Start
 
-### One-Line Execution
-```python
-from Technical.src.platform.international_economics_platform import InternationalEconomicsPlatform
-InternationalEconomicsPlatform().quick_start()  # Loads all data, generates all visualizations
-```
+> **Reference implementation.** This is a research showcase, not a packaged library. The
+> modules under `Technical/src/` use dated-bracket filenames (e.g. `[2025.10.06] …py`), which
+> are **not importable via dotted module paths** — `from Technical.src.platform… import …`
+> will fail. Read the modules directly or run the scripts under `Technical/src/scripts/`; treat
+> the code as a documented reference for the analysis rather than an installable API.
 
 ### Prerequisites
 - Python 3.8+
@@ -135,155 +133,49 @@ list of public data sources and download links.
 **Global Dashboard** (1 multi-panel chart):
 10. 5-panel global economics overview
 
-All visualizations: 300 DPI, professional styling, saved to `Output/Charts/`
+All visualizations: 300 DPI, professional styling, written under `OUTPUT_ROOT` (default `outputs/`)
 
 ---
 
 ## Project Structure
 
 ```
-International Trade/
-├── README.md                                      # This file - master documentation
-│
-├── Output/                                        # USER-FACING DELIVERABLES
-│   ├── Data/
-│   │   └── data source/                                 # Complete economic database
-│   │       ├── README.md                          # REQUIRED: Data provenance documentation
-│   │       ├── FLOW_OF_FUNDS/                     # US Flow of Funds (28,755 obs)
-│   │       │   ├── BEA_IIP/                       # International Investment Position
-│   │       │   ├── BEA_ITA/                       # International Transaction Accounts
-│   │       │   ├── Treasury_Ownership/            # Treasury holdings by sector
-│   │       │   └── Corporate_Equities/            # Foreign equity holdings
-│   │       ├── BALANCE_OF_PAYMENTS/               # Multi-country BoP (981 obs)
-│   │       │   ├── US_BEA/                        # United States (1960-2024)
-│   │       │   ├── UK_ONS/                        # United Kingdom (1946-2023)
-│   │       │   └── Germany_Bundesbank/            # Germany (1971-2024)
-│   │       ├── GDP/World_Bank/                    # GDP normalization data
-│   │       └── IMF/                               # IMF data (framework ready)
-│   ├── Charts/                                    # 10 visualizations (3.4 MB)
-│   │   ├── python_*.png                           # BoP & FoF analysis charts
-│   │   └── global_economics_dashboard.png         # Global overview
-│   └── Documentation/
-│       ├── Methodology/                           # BPM manuals (all 6 editions, 1948-2009)
-│       └── Country_Profiles/                      # JSON exports (US, UK, Germany)
-│
-├── Technical                                     # IMPLEMENTATION DETAILS
-│   ├── src/
-│   │   ├── data/                                  # Data access layer
-│   │   │   ├── fred_loader.py                     # FRED/BEA data (630 lines)
-│   │   │   └── imf_data_collector.py              # IMF API framework (550 lines)
-│   │   ├── analysis/                              # Analysis layer
-│   │   │   ├── bop_comparative_analysis.py        # Multi-country BoP (560 lines)
-│   │   │   └── flow_of_funds_analysis.py          # US FoF & IIP (550 lines)
-│   │   └── platform/                              # Platform layer
-│   │       ├── international_economics_platform.py # Base platform (430 lines)
-│   │       └── global_economics_platform.py        # Global platform (550 lines)
-│   └── configs/                                   # Configuration files
-│
-├── Classfiles/                                    # ORIGINAL R PROJECTS (READ-ONLY)
-│   ├── APE/final_APE/                             # Advanced Political Economy
-│   │   ├── APE_Final3_NA.Rmd                      # Flow of Funds analysis (684 KB)
-│   │   └── _data/Processed/                       # Original R data (preserved)
-│   └── Trade/final_Trade/                         # International Trade
-│       ├── Trade_Visualization_NA.Rmd             # BoP visualizations (183 KB)
-│       └── [Excel data files]                     # Original BoP data (preserved)
-│
-└── Documentation/                                 # PROJECT DOCUMENTATION (10+ files)
-    ├── INTERNATIONAL_ECONOMICS_PLATFORM_COMPLETE.md  # Platform documentation
-    ├── CLASSFILES_INTEGRATION_COMPLETE.md         # Integration report
-    ├── CLASSFILES_ANALYSIS_CATALOG.md             # R projects inventory
-    ├── COMPREHENSIVE_CROSS_BORDER_VALUE_TRANSFERS_FRAMEWORK.md
-    ├── API_RECOMMENDATIONS_AND_DATA_SOURCES.md    # 15+ data sources
-    └── [8 additional documentation files]
+lewis/
+├── README.md                       # This file
+├── data/                           # Source/input data (DATA_ROOT default)
+├── outputs/                        # Generated outputs (OUTPUT_ROOT default)
+└── Technical/
+    └── src/
+        ├── data/                   # Data access layer (FRED/BEA/IMF loaders)
+        ├── analysis/               # BoP & Flow of Funds analysis modules
+        ├── platform/               # Platform orchestration
+        ├── dashboard/              # Dashboard / visualization
+        └── scripts/                # Runnable entry-point scripts
 ```
 
-**Note**: The project separates source code (`Technical`) from generated outputs and keeps complete data provenance.
+**Note**: The project separates source code (`Technical/src/`) from source data (`data/`) and
+generated outputs (`outputs/`), and keeps complete data provenance. Module filenames use
+dated-bracket prefixes, so the code is meant to be read/run directly rather than imported as a
+package.
 
 ---
 
-## Usage Examples
+## Code Map
 
-### Platform Interface
+The analysis lives in a small set of modules under `Technical/src/`. Because the filenames carry
+dated-bracket prefixes, they are **not importable as dotted module paths** — read each module or
+run it directly to reproduce its outputs.
 
-```python
-from Technical.src.platform.international_economics_platform import InternationalEconomicsPlatform
+| Layer | Location | What it does |
+|-------|----------|--------------|
+| Platform | `Technical/src/platform/` | Orchestration: loads all data and drives the full analysis/visualization run |
+| Analysis | `Technical/src/analysis/` | Balance-of-Payments comparative analysis and US Flow-of-Funds / IIP analysis |
+| Data | `Technical/src/data/` | FRED/BEA loaders (with cache fallback) and the IMF collector framework |
+| Dashboard | `Technical/src/dashboard/` | Visualization / dashboard rendering |
+| Scripts | `Technical/src/scripts/` | Runnable entry points for the pipeline steps |
 
-# Initialize platform
-platform = InternationalEconomicsPlatform()
-
-# Quick start: load all data + generate all visualizations
-platform.quick_start()
-
-# Individual country analysis
-us_results = platform.analyze_country('US')
-uk_results = platform.analyze_country('UK')
-germany_results = platform.analyze_country('Germany')
-
-# Comparative analysis
-comparison = platform.comparative_analysis()
-
-# Platform summary
-summary = platform.platform_summary()
-print(summary)
-```
-
-### Individual Analysis Modules
-
-```python
-# Balance of Payments Analysis
-from Technical.src.analysis.bop_comparative_analysis import BoPComparativeAnalysis
-
-bop = BoPComparativeAnalysis()
-bop.load_data()
-bop.plot_us_nixon_shock()
-bop.plot_us_nafta_period()
-bop.plot_germany_reunification()
-bop.plot_comparative_analysis()
-
-# Flow of Funds Analysis
-from Technical.src.analysis.flow_of_funds_analysis import FlowOfFundsAnalysis
-
-fof = FlowOfFundsAnalysis()
-fof.load_all_data()
-fof.plot_net_international_investment_position()
-fof.plot_iip_components()
-fof.plot_foreign_holdings()
-fof.plot_treasury_ownership()
-```
-
-### Global Platform
-
-```python
-from Technical.src.platform.global_economics_platform import GlobalEconomicsPlatform
-
-# Initialize global platform
-global_platform = GlobalEconomicsPlatform()
-
-# Full execution
-global_platform.execute_full_platform()
-
-# Individual components
-global_platform.create_country_profile('US', save=True)
-global_platform.generate_global_dashboard(save=True)
-```
-
-### Data Access
-
-```python
-from Technical.src.data.fred_loader import FREDLoader
-
-# Initialize (works without API key using cache)
-loader = FREDLoader(use_cache=True)
-
-# Load specific datasets
-iip_data = loader.load_bea_iip()
-ita_data = loader.load_bea_ita_table1_2()
-treasury_data = loader.load_treasury_ownership()
-
-# Or with FRED API key for fresh data
-loader = FREDLoader(api_key='your_fred_api_key', use_cache=False)
-fresh_data = loader.load_bea_iip()
-```
+Data is read from `DATA_ROOT` (default `data/`) and results are written to `OUTPUT_ROOT`
+(default `outputs/`).
 
 ---
 
@@ -386,7 +278,7 @@ fresh_data = loader.load_bea_iip()
 - **Country-specific methodology docs**: BEA, ONS, Bundesbank guides
 
 ### For Development
-- Individual module docstrings: See source files in `src`
+- Individual module docstrings: See source files in `Technical/src`
 - Code comments: Inline documentation throughout
 
 ---
@@ -423,7 +315,7 @@ fresh_data = loader.load_bea_iip()
 - Data catalogs (data source README, CLASSFILES_ANALYSIS_CATALOG.md)
 - Master README update (this file)
 
-**Current Status**: PRODUCTION READY ✅
+**Current Status**: Research showcase — reference implementation
 
 ---
 
@@ -522,8 +414,7 @@ For data sources and download links, see `data/MANIFEST.md`.
 
 - **Project**: International Trade Analysis
 - **Standards**: IMF BPM6 (2009)
-- **Platform Version**: 2.0
-- **Last Updated**: October 6, 2025
+- **Type**: Research showcase — reference implementation
 
 **For questions about**:
 - **Data**: See `Output/Data/data source/README.md`
@@ -543,7 +434,7 @@ This project is part of academic research. Data sources maintain their original 
 
 ---
 
-**Platform Status**: Production Ready ✅
+**Status**: Research showcase — reference implementation
 **Total Observations**: 116,000+
 **Time Span**: 79 years (1945-2024)
 **Countries**: 3 (US, UK, Germany)

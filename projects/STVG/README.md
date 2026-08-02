@@ -5,7 +5,7 @@ A historically-calibrated banking CEO simulation built as a C++ statistical engi
 ## Quick Start
 
 ```bash
-cd StatisticalEngine
+cd Technical/StatisticalEngine
 
 # Build (MSVC 2022 / Visual Studio 17 — kill zombies first; reconfigure after new test files)
 taskkill /F /IM stvg_server.exe /IM stvg_tests.exe /IM stvg_autoplay.exe
@@ -146,7 +146,7 @@ political engine, climate/AI endgame, historical calibration from FRED data, sav
 PersonalBook, event→market sign-weighting, portrait/credibility cast (12 bankers + 17 presidents).
 
 **What's next**: owner **playtest loop** (P10 — play sessions; telemetry lands in
-`StatisticalEngine/telemetry/`; `analyze_session.py` → iterate tunables); **KB merge review**
+`Technical/StatisticalEngine/telemetry/`; `python Technical/_playtest/analyze_session.py` → iterate tunables); **KB merge review**
 (`kb_mining` — staged events/characters await owner sign-off); **sprite
 generation on the RTX 5090 + tiny-tower floor view** (P9; placeholder strip in My Bank now);
 a **leverage death-spiral balance pass** (pre-existing: bots die ~Q304 at 19.4× leverage,
@@ -164,7 +164,7 @@ source of truth: `STVG_SERVING.md`; plan + gate:
 ## How to Play
 
 ```bash
-cd StatisticalEngine
+cd Technical/StatisticalEngine
 
 # Build (requires MSVC 2022 / Visual Studio 17)
 cmake -B build -G "Visual Studio 17 2022" -DCMAKE_BUILD_TYPE=Debug -Wno-dev
@@ -185,8 +185,8 @@ build\Debug\stvg_autoplay.exe --quick-matrix --parallel
 take loans and watch the Loan Book and personal trading book move, hire and poach staff,
 click a chart to promote it to the hero slot, let routine decisions lapse or act on the
 big ones, and watch portraits pop on era/credibility beats. Everything you do is recorded:
-playtest **telemetry lands in `telemetry` as `session_*.jsonl`**,
-and `analyze_session.py <session.jsonl> -o report.md` renders a
+playtest **telemetry lands in `Technical/StatisticalEngine/telemetry/` as `session_*.jsonl`**,
+and `python Technical/_playtest/analyze_session.py <session.jsonl> -o report.md` renders a
 session report for tuning pace, the money curve, and portrait cadence.
 
 ---

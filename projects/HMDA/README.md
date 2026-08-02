@@ -12,13 +12,13 @@ sources and download links.
 
 ## Repository layout
 
-- `src` — analysis library
+- `Technical/src` — analysis library
   - `hmda/`, `census/` — loaders / parsers for HMDA LAR and FFIEC Census flat files
   - `analysis/` — disparity, geographic-aggregation, longitudinal, multi-scope analyses
   - `bhutta_replication/` — Python port of the R replication (multiple iterations + diagnostics)
   - `validation/`, `quality/` — tract-boundary correction/validation and data-quality monitors
   - `api/` — Flask / Streamlit / FastAPI dashboards
-- `scripts` — CLI entry points
+- `Technical/scripts` — CLI entry points
 - `streamlit_dashboard.py`, `update_dashboard_data.py` — dashboard app + data refresh
 - `comprehensive_*.py`, `hmda_master_workflow.py` — top-level orchestration
 
@@ -54,10 +54,10 @@ you prefer a dotenv file.
 
 ```bash
 # Census flat-file parser
-python "census_full_parser.py"
+python "Technical/src/census/census_full_parser.py"
 
 # Bhutta-style replication (latest)
-python bhutta_replication_FINAL.py
+python Technical/src/bhutta_replication/r_modified/bhutta_replication_FINAL.py
 
 # Dashboard
 streamlit run streamlit_dashboard.py

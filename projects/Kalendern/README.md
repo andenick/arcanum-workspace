@@ -11,7 +11,7 @@ This is a **code-only** release. The ~18.6 GB of page scans and OCR model weight
 
 ## What it does
 
-Two volume "kinds" (see `volumes.json`):
+Two volume "kinds" (see `Technical/volumes.json`):
 
 - **`ocr_pdf`** (GUB digitisations, e.g. 1912/1914): mine the embedded OCR text layer →
   word extraction → page classification → record parsing. CPU-only.
@@ -26,13 +26,13 @@ gutter-split -> per-column OCR [multi-engine + optional VLM] -> consensus fusion
 
 ## Repository layout
 
-- `run_volume.py` — year-agnostic entry point (`--list`, `--volume <id>`)
-- `volumes.json` — volume registry
-- `pipeline` — image pipeline stages (`s0`–`s6`, assemble, parse, agreement report)
-- `gub` — GUB PDF-text path (extract / quality / parse) + dataset/LoRA tooling
-- `ocr_engines` — per-engine runners (PaddleOCR, docTR, Tesseract, Kraken, …)
-- `vlm` — llama.cpp GGUF VLM serving + prompts (`serve_model.ps1`)
-- `run_surya.py` — Surya layout/recognition smoke run
+- `Technical/run_volume.py` — year-agnostic entry point (`--list`, `--volume <id>`)
+- `Technical/volumes.json` — volume registry
+- `Technical/pipeline` — image pipeline stages (`s0`–`s6`, assemble, parse, agreement report)
+- `Technical/gub` — GUB PDF-text path (extract / quality / parse) + dataset/LoRA tooling
+- `Technical/ocr_engines` — per-engine runners (PaddleOCR, docTR, Tesseract, Kraken, …)
+- `Technical/vlm` — llama.cpp GGUF VLM serving + prompts (`serve_model.ps1`)
+- `Technical/run_surya.py` — Surya layout/recognition smoke run
 
 ## Setup
 
@@ -65,8 +65,8 @@ Copy `.env.example` to `.env` and edit if you prefer a dotenv file.
 ### Run
 
 ```bash
-python run_volume.py --list
-python run_volume.py --volume taxkal_1912
+python Technical/run_volume.py --list
+python Technical/run_volume.py --volume taxkal_1912
 ```
 
 ## API keys — bring your own

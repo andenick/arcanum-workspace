@@ -55,6 +55,8 @@ scattered government reports.
 | **Unified knowledge architecture** | [`docs/frameworks/auka.md`](docs/frameworks/auka.md) — AUKA v1.1 |
 | **Skill + command templates** | [`docs/05-commands-skills/`](docs/05-commands-skills/) |
 
+> **Note on HDARP:** the public [`hdarp`](https://github.com/andenick/hdarp) repo currently ships the **v5.1** OCR-consensus layer, while the protocol documented here is **v6.3** (full v6.3 publication planned).
+
 ```
    PDFs / scans
         │
@@ -138,4 +140,4 @@ are being reviewed separately; treat the current tree, not the history, as the c
 
 ---
 
-**Frameworks:** HDARP v6.3 · Anu v12.2 · Sraffa 4.0 OCR · Robert DB v1.0 · KBIP v1.0 · Hopper Line v2 v1.0 · AUKA v1.1
+**Frameworks:** HDARP v6.3 · Anu v12.2 · Sraffa 4.0 OCR · Robert DB v1.0 · KBIP v1.0 · Hopper Line v2 (HL2 v1.0) · AUKA v1.1
