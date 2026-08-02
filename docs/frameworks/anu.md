@@ -24,7 +24,7 @@ a value when the real one cannot be found.
 
 Anu is organized as a family of cooperating **skills** — small, versioned units
 of process, each responsible for one job — driven by a single orchestrator. The
-current release comprises **19 active skills** (plus 2 deprecated redirect stubs)
+current release comprises **19 active skills** (plus 2 superseded, still shipped in full)
 spanning the full lifecycle from initial research to public distribution.
 
 > **Note on scope:** this document describes the Anu Framework; the individual `anu-*` skill

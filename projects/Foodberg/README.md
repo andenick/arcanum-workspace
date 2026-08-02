@@ -1,10 +1,10 @@
 # Foodberg — Historical Food Price Explorer
 
-**State verified: 2026-05-22**
+**Status: 🟢 LIVE at [foodberg.org](https://foodberg.org)** · State verified: 2026-07-25
 
-**A full-stack web application for exploring historical food commodity prices, built with React and FastAPI. 169,000+ records from 5 public data sources covering 50+ agricultural commodities.**
+**A full-stack web application for exploring historical food commodity prices, built with React and FastAPI. Over 4 million records — 6 commodity-price datasets plus economic indicators and derived composite indices — from public US government and international sources, covering 85 browsable commodities.**
 
-> **Project state (2026-05-22):** Two tracks. (1) The web app — backend DB ~169K records, working locally, not deployed. (2) The KB wishlist track — v4 wishlist current (1,985 entries / 105 categories, `2026.06.20 KB Wishlist v4 Global`); ~802 source PDFs acquired into `Inputs` (2026-05-10) but **not yet extracted**. No HDARP campaign has run — no `Knowledge_Base`, no `BATCH_STATE.json`. See `PROGRESS_LOG.md`.
+> **Project state:** Two tracks. (1) **The web app — LIVE at [foodberg.org](https://foodberg.org)**, self-hosted on an HP EliteDesk 800 G5 (Docker + Caddy + Cloudflare Tunnel); the `foodberg.db` SQLite database is **~2.94 GB** (see Data Sources below). Authoritative deployment record: `DEPLOYMENT_TRUTH.md`. (2) The KB wishlist track — v4 wishlist current (1,985 entries / 105 categories, `2026.06.20 KB Wishlist v4 Global`); ~802 source PDFs acquired into `Inputs` (2026-05-10) but **not yet extracted**. No HDARP campaign has run — no `Knowledge_Base`, no `BATCH_STATE.json`. See `PROGRESS_LOG.md`.
 
 ---
 
@@ -39,7 +39,7 @@ npm run dev                      # Starts on http://localhost:3000
 ## Features
 
 - **Food Price Index**: Composite indices for 6 food groups (meat, dairy, cereals, oils, sugar, produce) from FAO and BLS data, 1990–present
-- **Price Explorer**: Browse 50+ agricultural commodities from USDA WASDE data
+- **Price Explorer**: Browse 85 agricultural commodities from USDA WASDE, AMS, and NASS data
 - **Geographic Comparison**: Compare prices across US states and regions
 - **Historical Trends**: Multi-commodity comparison with correlation analysis
 - **Live Terminal Prices**: USDA Market News API integration (requires `USDA_API_KEY`)
@@ -48,14 +48,18 @@ npm run dev                      # Starts on http://localhost:3000
 
 ## Data Sources
 
-| Source | Records | Coverage | Access |
-|--------|---------|----------|--------|
-| USDA WASDE | 147,369 | 50 US agricultural commodities (grains, livestock, dairy, fruits) | [USDA ERS](https://www.ers.usda.gov/data-products/wheat-data/) |
-| FRED | 10,290 | CPI, PPI, interest rates, economic indicators | [FRED API](https://fred.stlouisfed.org/docs/api/) |
-| BLS CPI | 840 | Food at Home, Food Away, 5 sub-components (2015–2025) | [BLS](https://www.bls.gov/cpi/) |
-| FAO | 2,586 | Global food price indices: meat, dairy, cereals, oils, sugar (1990–2025) | [FAO FPMA](https://www.fao.org/worldfoodsituation/foodpricesindex/) |
-| World Bank | 2,705 | Agricultural production/trade indicators for 9 countries | [WDI](https://data.worldbank.org/) |
-| Composite Indices | 2,715 | Computed from FAO + BLS data | Derived |
+The live `foodberg.db` is **~2.94 GB**. Row counts by dataset:
+
+| Dataset (`table`) | Records | Source |
+|-------------------|--------:|--------|
+| `ams_wholesale_prices` | 1,671,751 | USDA AMS Market News (terminal/wholesale prices) |
+| `wasde` | 1,459,734 | USDA World Agricultural Supply & Demand Estimates |
+| `nass` | ~1,060,000 | USDA National Agricultural Statistics Service |
+| `faostat` | ~167,000 | FAO FAOSTAT (global food & agriculture statistics) |
+| World Bank Pink Sheet | ~49,000 | World Bank global commodity prices |
+| `retail` | 22,398 | Retail food prices |
+| `economic_indicators` | 16,246 | CPI / PPI / macro indicators |
+| `composite_indices` | 3,146 | Derived food-price indices |
 
 ---
 
@@ -85,8 +89,8 @@ Foodberg/
 |-------|-----------|
 | Frontend | React 19, TypeScript, Vite, Tailwind CSS, Recharts |
 | Backend | FastAPI, Python, SQLAlchemy |
-| Database | SQLite (169K records) |
-| Deployment | Netlify (frontend) + Render (backend), all free tier |
+| Database | SQLite (`foodberg.db`, ~2.94 GB) |
+| Deployment | Self-hosted on an HP EliteDesk 800 G5 — Docker + Caddy + Cloudflare Tunnel; live at [foodberg.org](https://foodberg.org) |
 
 ---
 

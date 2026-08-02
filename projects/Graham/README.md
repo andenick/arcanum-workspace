@@ -24,7 +24,7 @@ The core asset is an XBRL fundamentals panel built from SEC EDGAR company facts:
    Copy `.env.example` to `.env` and fill in your values, or export them in your shell.
 4. **Run** any pipeline step, e.g.:
    ```
-   python L01_load_xbrl.py
+   python Technical/AnuData/S01/L01_load_xbrl.py
    ```
    Steps under `S01` build the core `graham_base.parquet` panel; later studies read it.
 

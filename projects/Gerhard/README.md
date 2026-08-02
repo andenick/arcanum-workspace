@@ -60,16 +60,16 @@ the **World Bank** indicators API, and **OECD** SDMX endpoints.
 
 ```bash
 # Check data completeness
-python check_data.py
+python Technical/src/check_data.py
 
 # Run pipeline (using existing raw data)
-python run_pipeline.py --skip-download
+python Technical/src/run_pipeline.py --skip-download
 
 # Run full pipeline including downloads
-python run_pipeline.py
+python Technical/src/run_pipeline.py
 
 # Run tests
-python -m pytest tests -v
+python -m pytest Technical/tests -v
 ```
 
 ## Project Structure
@@ -127,7 +127,7 @@ download_tax_data.py -> fetch_us_tax_data.py -> process_tax_data.py
 
 Country pipeline: `build_country_infrastructure.py -> collect_country_data.py -> analyze_countries.py -> generate_country_reports.py`
 
-Use `run_pipeline.py` to orchestrate. Use `check_data.py` to verify data availability.
+Use `Technical/src/run_pipeline.py` to orchestrate. Use `Technical/src/check_data.py` to verify data availability.
 
 ## Status
 
@@ -149,8 +149,8 @@ See `requirements.txt` for full dependency list.
 - `DATABASE_CATALOG.md` -- Complete 4.35 GB data inventory
 - `FISCAL_DATA_SOURCES.md` -- Detailed source documentation
 - `EXECUTIVE_SUMMARY.md` -- Global insights and findings
-- `COFOG_TAXONOMY.md` -- Government spending classification
-- `FISCAL_COMPARABILITY_GUIDE.md` -- Cross-country methodology
+- `Technical/docs/COFOG_TAXONOMY.md` -- Government spending classification
+- `Technical/docs/FISCAL_COMPARABILITY_GUIDE.md` -- Cross-country methodology
 
 ---
 
