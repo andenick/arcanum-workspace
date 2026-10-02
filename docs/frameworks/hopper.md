@@ -178,6 +178,35 @@ A profile is selected at run time; everything else about the pipeline stays the 
 
 ---
 
+## Human-anchored QA gates
+
+The engine never grades its own output on its own say-so. Two human-anchored gates sit on top of
+the offline pipeline, and both run on ordinary hardware with no re-extraction:
+
+- **Seeded stratified spot-check.** A reproducible, seeded sample of pages — stratified across
+  content classes, deliberately oversampling the hard ones (handwriting, degraded or mixed pages),
+  and force-including pages that raised extraction flags — is rendered as a packet showing each
+  page image beside the engine's full output for that page. A human labels every sampled page
+  **Y** (faithful), **partial** (mostly faithful, recoverable errors), or **N** (not faithful),
+  and those labels — never an automated judge — produce the verdict: a usable-rate score
+  (Y plus half of partial, over pages labeled) mapped to pass / remediate / fail bands, plus
+  detection of systematic failure clusters (repeated N labels concentrated in one document or
+  content class), which trigger targeted re-extraction of just that stratum rather than a
+  whole-batch failure.
+
+- **Bounded human review lane.** The pages the engine could not read faithfully — hard integrity
+  failures, tables whose rows and columns fail to cross-foot, pages that came back empty although
+  the page is not blank, pages a spot-check marked N together with their same-class siblings, and
+  pages that exhausted the retry ladder — are assembled into one bounded review lane. For each
+  flagged page a human chooses exactly one disposition: **confirm** (the output was in fact fine),
+  **correct** (supply the right transcription, which then wins while the original is retained in
+  provenance), or **not captured** (genuinely illegible — an honest, first-class outcome, never a
+  fabricated guess). The lane carries a hard share bound: if more than a quarter (**25%**) of a
+  batch's pages land in the review lane, the batch **fails** outright — hand-transcribing a large
+  fraction of a corpus is treated as a routing bug to investigate, not diligence to grind.
+
+---
+
 ## Output, in brief
 
 For each document Hopper produces:
