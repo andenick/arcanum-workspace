@@ -28,8 +28,8 @@ the storage and database layers were welded to one extraction engine, then:
 - **Mixed corpora could not be compared.** A document read by one method and a document read
   by another could not sit side-by-side in the same database without ambiguity.
 
-KBIP solves this by treating the **reading method as first-class data** that travels with the
-document through every layer, rather than as an implementation detail that gets discarded once
+KBIP solves this by treating the **reading method as first-class data** that travels with
+the document through every layer, rather than as an implementation detail that gets discarded once
 the text is extracted.
 
 ---
@@ -112,39 +112,63 @@ source-datum quality is likewise set during a separate enrichment step, never de
 
 KBIP is an **integration and on-ramp** layer. It does **not** read documents (the extraction
 engines do that) and it does **not** build the final research database (a separate database
-framework does that). It is the connective tissue in between:
+framework does that). It operates on a project knowledge base that the extraction engines — or
+their landing on-ramps — have already written and self-declared, and it is the connective tissue
+in between:
 
 ```
-  EXTRACTION ENGINES                KBIP (this layer)                 DATABASE BUILD
-  ─────────────────                 ─────────────────                 ──────────────
-  cloud-agent reading   ─┐                                         ┌─ harvest tables
-  offline-vision reading ─┼──►  LAND   the extraction into the     │  (reads the metadata
-  human transcription   ─┘      project knowledge base             │   sidecars natively,
-                                TAG    each doc with read_method    │   pre-graded by the
-                                CATALOG into method-tagged catalogs │   transcription axis)
-                                LEDGER write provenance rows        ├─ enrich / organize
-                                SAFE-PACKAGE a dated, gated backup  ├─ audit (honesty gate)
-                                          │                         └─ publish
-                                          └──────────────────────────►
+  EXTRACTION ENGINES                KBIP (this layer)                  DATABASE BUILD
+  ─────────────────                 ─────────────────                  ──────────────
+  cloud-agent reading   ─┐                                                ┌─ harvest tables
+  offline-vision reading ─┼──►     BACKUP       archive the KB first      │  (reads the metadata
+  human transcription   ─┘         AUDIT        docs + read_method        │   sidecars natively,
+                                   CATALOG      tables/equations/figures  │   pre-graded by the
+                                   CLASSIFY     source/topic classes      │   transcription axis)
+                                   CROSSREF     relationships             ├─ enrich / organize
+                                   INTEGRATE    manifest + statistics     ├─ audit (honesty gate)
+                                   ROBERT-SYNC  ledger rows + sync        │
+                                            │                             └─ publish
+                                            └──────────────────────────►
 ```
 
-### The integration stages
+### The integration phases
 
-1. **LAND** — move a finished extraction from the working area into the project's permanent
-   knowledge base in a consistent folder layout.
-2. **TAG** — write the three self-declaration surfaces so each document declares its reading
-   method, engine version, and models used.
-3. **CATALOG** — record every document, table, equation, and figure in **method-tagged catalogs**
-   (a single superset schema, so engine-specific columns are simply blank where they do not
-   apply, and `read_method` is always present).
-4. **LEDGER** — write provenance rows into the project's processing log, knowledge-base catalog,
-   and provenance ledger, all keyed by the source-file hash and written idempotently (re-running
-   produces no duplicates).
-5. **SAFE-PACKAGE** — build a dated backup archive and run an integrity gate (all four artifacts
-   present, body-text chunk markers present, metadata schema valid, self-declaration present,
-   provenance complete, nothing left pending). The archive is only combined into the canonical
-   store **on a passing gate**, and the prior state is archived rather than deleted. A
-   deliberately broken document fails the gate and blocks the merge.
+The pipeline runs in **7 phases**, identically for every reading engine — the only difference
+between engines is which `read_method` value each row carries:
+
+1. **BACKUP** — take a zip-based archive of the finished knowledge base before anything else is
+   touched, with a file-inventory manifest; the archive's integrity is verified before the
+   pipeline proceeds, and every campaign writes its own archive, never modifying an existing one.
+2. **AUDIT** — enumerate every document directory and produce the document-level audit catalog:
+   artifact completeness, per-document counts, quality and status. This is where each document's
+   `read_method` is resolved from the read-method spine — the pipeline *reads* the three
+   self-declaration surfaces; it never authors them.
+3. **CATALOG** — record every table, equation, figure, entity and chart-to-data extraction in
+   **method-tagged catalogs** (a single superset schema, so engine-specific columns are simply
+   blank where they do not apply, and `read_method` is always present). The chart-data catalog
+   exists for both engines but only carries rows for the engine that extracts charts to data.
+4. **CLASSIFY** — apply the source-type, topic, temporal-period and content-type classifications.
+   The reading engine is recorded only in its own `read_method` column; a real provenance
+   classification is never overwritten with an engine string.
+5. **CROSSREF** — map document relationships from citation patterns, entity co-occurrence and
+   source-organization links, and record which engines are present in the corpus.
+6. **INTEGRATE** — assemble the project manifest and the final catalog set, with per-`read_method`
+   statistics and a catalog-completeness validation.
+7. **ROBERT-SYNC** — sync to the shared cross-project store: copy the catalogs, register the
+   project, and write the method-keyed provenance rows — processing log, knowledge-base catalog,
+   provenance ledger — idempotently, keyed by the source-file hash so a re-run produces no
+   duplicate rows.
+
+**The OCR-sibling layer and the underscore guard.** The reading framework's v6.4 "Hybrid"
+body-text model made every agent-read document *two* readings: the agent-read layer plus a
+verbatim OCR sibling in its own separate tree. KBIP's audit phase therefore **excludes every
+underscore-prefixed tree** — the OCR-sibling layer and other control trees are sibling layers,
+not documents, and counting one would write a phantom row into every downstream catalog. The
+document audit correspondingly records three more columns per document:
+**`extraction_method`** (`verbatim` or `analytical_digest` — whether the agent layer is the text
+itself or a documented paraphrase), **`ocr_layer_path`** (the relative location of the verbatim
+sibling, empty when there is none), and **`ocr_layer_complete`** (`false` honestly records that
+pages of the sibling layer are still queued for the OCR pass, rather than implying coverage).
 
 Only after KBIP finishes does the **database build** run. Because KBIP has already tagged every
 document and pre-graded the transcription axis, the database harvester ingests the metadata
@@ -176,6 +200,6 @@ reading method as first-class, self-declaring, hash-joined data — and by norma
 engine's output to one four-artifact shape with a two-axis quality model — it lets documents read
 by completely different methods flow into the same per-project storage and the same research
 database, while preserving the provenance needed for reproducibility and audit. It sits squarely
-between the extraction engines and the database build, owning the LAND → TAG → CATALOG → LEDGER →
-SAFE-PACKAGE on-ramp, and it is engineered so that adding a new reading engine later requires
-nothing downstream to change.
+between the extraction engines and the database build, owning the BACKUP → AUDIT → CATALOG →
+CLASSIFY → CROSSREF → INTEGRATE → ROBERT-SYNC sequence, and it is engineered so that adding a
+new reading engine later requires nothing downstream to change.
