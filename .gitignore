@@ -60,3 +60,6 @@ desktop.ini
 # Logs
 *.log
 logs/
+
+# private workspace provenance - never publish
+Technical/
