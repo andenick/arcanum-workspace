@@ -33,9 +33,10 @@ Organize depends only on harvest and may run alongside enrich.
 
 1. **Seed.** Collect distinct `documents.category_raw` and any catalog topic columns
    into candidate `taxonomy_terms` with `source='seed_catalog'`, `ratified=0`.
-2. **Propose hierarchy (agent).** Spawn an Opus subagent (foreground) to fold the
+2. **Propose hierarchy (agent).** Spawn a Sonnet 5.5 subagent (foreground; Opus only
+   per `model-efficiency.md`) to fold the
    seeds into a **2-level** hierarchy (top-level domains → child terms), writing a
-   proposal file `TAXONOMY_PROPOSAL.md` with each term's
+   proposal file `Technical/RobertDB/state/TAXONOMY_PROPOSAL.md` with each term's
    `label`, `definition`, parent, and `source='agent_proposed'`. The agent proposes;
    it does not classify yet.
 3. **USER RATIFICATION (REQUIRED).** Present the proposal to the user. **Do not
@@ -52,20 +53,21 @@ Organize depends only on harvest and may run alongside enrich.
 1. **Propose candidates.**
    ```bash
    PYTHONIOENCODING=utf-8 python rdb_concordance_candidates.py \
-       --config <P>/robertdb_config.json propose \
+       --config <P>/Technical/RobertDB/robertdb_config.json propose \
        [--min-size 2] [--kind-hint year_series_family panel_family]
    ```
    This writes a candidates JSONL (proposed clusters with member `table_uid`s and a
    `kind` guess: `year_series_family` | `panel_family` | `scenario_family` |
    `topical_group`).
-2. **Agent review.** Spawn an Opus subagent (foreground) to read the candidates
+2. **Agent review.** Spawn a Sonnet 5.5 subagent (foreground; Opus only per the Model
+   Efficiency Policy) to read the candidates
    JSONL plus the member tables' context, accept/reject/relabel each cluster, set a
    human-readable `label` + `description`, fix `kind`, and order members
    (`ordering_key` = year / cycle / volume). Write the reviewed JSONL.
 3. **Commit.**
    ```bash
    PYTHONIOENCODING=utf-8 python rdb_concordance_candidates.py \
-       --config <P>/robertdb_config.json commit \
+       --config <P>/Technical/RobertDB/robertdb_config.json commit \
        --reviewed <reviewed.jsonl>
    ```
    Accepted clusters become `concordances` rows (id `<PJ>-K-NNNN`, `method` =

@@ -18,7 +18,7 @@ sub-skill to invoke, and how the build pipeline fits the broader Arcanum pipelin
 ## What it is
 
 The Robert Database Framework turns the mechanical output of HDARP extraction
-(per-project `Knowledge_Base` folders of `FULL_TEXT*.md` + `CSV_Tables/` +
+(per-project `Knowledge_Base/` folders of `FULL_TEXT*.md` + `CSV_Tables/` +
 `equations/` + `figures/`) into a **research-grade per-project database**:
 
 - **One SQLite database per project** (`robertdb.sqlite`) — the canonical store.
@@ -57,7 +57,7 @@ and a run ledger hang off it. The provenance spine is
 ## Pipeline diagram
 
 ```
-/hdarp-integrate-pipeline  (HDARP KB + catalogs land in the project)
+/kb-integrate-pipeline  (KB + catalogs land in the project; alias: /hdarp-integrate-pipeline)
             |
             v
   robert-db-build  (orchestrator; --resume from BUILD_STATE.json)
@@ -77,7 +77,7 @@ PUBLISH. The orchestrator runs them in the order above and is resumable.
 
 ## Position in the broader Arcanum pipeline
 
-Robert DB runs **after** `/hdarp-integrate-pipeline`. It consumes the integrated
+Robert DB runs **after** `/kb-integrate-pipeline`. It consumes the integrated
 Knowledge_Base + catalogs (`DOCUMENT_AUDIT.csv`, `TABLE_CATALOG.csv`,
 `ENTITY_CATALOG.csv`, `CLASSIFICATION_MASTER.csv`) and the cross-project
 `_UNIFIED/PDF_REGISTRY.csv` + `KB_CATALOG.csv` (read-only) to resolve the
@@ -99,7 +99,7 @@ Robert DB ids are **collision-proof against Anu**: Robert mints `<PJ>-T-NNNNNN`
 (tables), `<PJ>-K-NNNN` (concordances), `<PJ>-RS-NNNN` reserved (row-set); Anu
 mints `D###` / `XS###`. The `-T-`/`-K-`/`-RS-` infixes never collide with Anu's
 prefix scheme. An Anu project that draws a fact from a Robert table **cites the
-Robert id** (e.g. `VLK-T-004217`) in its DPR and **mints its own** `D`/`XS` id for
+Robert id** (e.g. `PRJ-T-004217`) in its DPR and **mints its own** `D`/`XS` id for
 the constructed series. Robert is the cited source-of-record; Anu is the
 constructed-series layer on top of it.
 
@@ -109,7 +109,7 @@ constructed-series layer on top of it.
 - **Config spec** — `CONFIG_SPEC.md`
 - **Patch contract** — `PATCH_CONTRACT.md`
 - **Engine scripts** — `rdb_*.py` (single canonical
-  copy; per-project state lives in `RobertDB`)
+  copy; per-project state lives in `<P>/Technical/RobertDB/`)
 - **Canonical standard** —
   `ROBERT_DATABASE_FRAMEWORK_OVERVIEW.md`
 

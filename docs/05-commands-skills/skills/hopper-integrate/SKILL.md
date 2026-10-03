@@ -2,7 +2,7 @@
 name: hopper-integrate
 description: "Land + tag + integrate a finished Hopper Line v2 KB into the project KB + Robert ledgers + robert-db, method-tagged. Use when a Hopper extraction is done (on the floor at {hopper}/<doc> or already at <P>/Knowledge_Base) and you need to LAND it, TAG it read_method=Hopper, CATALOG it (KBIP v1.0), wire the unified ledgers, build a dated safe-package, and hand off to /kb-integrate-pipeline + robert-db-build. Does NOT extract or use the GPU."
 when-to-use: '"User finished a Hopper Line v2 extraction and wants it integrated into the project Knowledge_Base, the unified Robert ledgers, and robert-db — method-tagged as Hopper, not HDARP."'
-search-hints: "hopper integrate on-ramp land tag catalog ledger safe-package KBIP read_method Hopper Line v2 robert-db Jane"
+search-hints: "hopper integrate on-ramp land tag catalog ledger safe-package KBIP read_method Hopper Line v2 robert-db"
 allowed-tools: Read, Write, Bash, Glob, Grep, Edit
 argument-hint: "[project] [--dry-run] [--apply] [--kb-root DIR] [--zip]"
 version: 1.0
@@ -14,7 +14,7 @@ requires: hopper
 
 > **Sibling of `/kb-integrate-pipeline`** (the W4-renamed, method-agnostic pipeline). This is the
 > **Hopper on-ramp** that prepares a finished Hopper Line v2 (HL2) KB so the shared pipeline can run.
-> It is **lighter** than `/hdarp-integrate-pipeline` because Hopper already emits the 4 KB artifacts
+> It is **lighter** than `/kb-integrate-pipeline` because Hopper already emits the 4 KB artifacts
 > (body text + tables + equations + figures) at extraction time — this on-ramp just **LANDs, TAGs,
 > CATALOGs, wires LEDGERs, builds a SAFE-PACKAGE, and hands off**. It never re-extracts.
 > Canonical standard: `KB_INTEGRATION_PIPELINE_BUILD_PLAN.md` (§4 W3).
@@ -22,15 +22,15 @@ requires: hopper
 ## When to use
 
 You have a finished **Hopper Line v2** extraction (4-artifact + Anu-ready output, produced by `/hopper`)
-and you want it folded into the project's `Knowledge_Base`, the unified Robert ledgers, and the per-project
+and you want it folded into the project's `Knowledge_Base/`, the unified Robert ledgers, and the per-project
 Robert database — **method-tagged as `Hopper`**, joinable by `source_md5` alongside HDARP docs in the same
-KB. The proof run is **Jane** (305 docs).
+KB. The proof run was a **305-document corpus**.
 
 ```bash
-/hopper-integrate Jane --dry-run     # ACCEPTANCE: list every doc + planned artifacts, write NOTHING
-/hopper-integrate Jane               # same as --dry-run (DRY-RUN IS THE DEFAULT)
-/hopper-integrate Jane --apply       # actually TAG + LEDGER-write + SAFE-PACKAGE, then hand off
-/hopper-integrate Jane --apply --zip # ...and write the dated KB_HOPPER_Jane_{date}.zip backup
+/hopper-integrate <P> --dry-run     # ACCEPTANCE: list every doc + planned artifacts, write NOTHING
+/hopper-integrate <P>               # same as --dry-run (DRY-RUN IS THE DEFAULT)
+/hopper-integrate <P> --apply       # actually TAG + LEDGER-write + SAFE-PACKAGE, then hand off
+/hopper-integrate <P> --apply --zip # ...and write the dated KB_HOPPER_{P}_{date}.zip backup
 ```
 
 **`--dry-run` is the default.** Nothing outside the project KB + ledgers is ever touched, and in dry-run
@@ -60,14 +60,14 @@ manual`. An agent must be able to answer "how was this doc read?" from the folde
 
 ## The proven pieces (this skill ORCHESTRATES them — do not reinvent)
 
-All live in `Hopper`, are **stdlib-only**, and were proven on Jane (305 docs).
-Run with the eval venv and `PYTHONUTF8=1`:
+All live in `Hopper` (the engine tree), are **stdlib-only**, and were proven on a 305-document corpus.
+Run with the engine venv and `PYTHONUTF8=1`:
 
 ```
 PY="python.exe"
 HOP="Hopper"
 KB="<P>/Knowledge_Base"
-OUT="<P>/KBIP_Integration"
+OUT="<P>/Technical/KBIP_Integration"
 ```
 
 | Step | Script | What it does | Writes where |
@@ -84,18 +84,18 @@ A thin `hopper_integrate.py` orchestrator (same dir) chains all four in order wi
 
 ### 0. LAND — ensure the project KB holds the Hopper doc folders
 
-A finished Hopper KB may live on the **floor** (`<doc>`) or already be at
-`Knowledge_Base`. LAND = make the project KB hold the doc folders in the existing Hopper KB
+A finished Hopper KB may live on the **floor** (`{hopper}/<doc>`) or already be at
+`<P>/Knowledge_Base/`. LAND = make the project KB hold the doc folders in the existing Hopper KB
 layout (`<doc>/{manifest.json, confidence.json, hdarp/{FULL_TEXT_chunks_*.md, CSV_Tables/, equations/,
 figures/}}`). Rules:
 
-- **If the docs are already in `Knowledge_Base` (the Jane case): LAND is a no-op verify.**
+- **If the docs are already in `<P>/Knowledge_Base/` (the already-landed case): LAND is a no-op verify.**
   Confirm the `DOC*` folders exist with their `manifest.json` + `hdarp/` artifacts; do nothing else.
-- If the docs are on the floor: **COPY** (never move) `<doc>` → `<doc>`,
+- If the docs are on the floor: **COPY** (never move) `{hopper}/<doc>` → `<P>/Knowledge_Base/<doc>`,
   preserving the layout. Archive-don't-delete: leave the floor copy in place.
 - **NEVER re-extract.** Hopper already produced the 4 artifacts. LAND only relocates/verifies folders.
 
-Verify with: `manifest.json` and a spot-check that each has an
+Verify with: `Glob <P>/Knowledge_Base/DOC*/manifest.json` and a spot-check that each has an
 `hdarp/` subdir.
 
 ### 1. TAG — `kbip_backfill.py` (idempotent, additive; writes only inside the KB)
@@ -156,21 +156,21 @@ and whether the safe-package gate would PASS. CATALOG and LEDGER-dry-run are the
 dry-run executes them (they write only to `OUT/` for catalogs, which is the project's own Technical tree) and
 reports the would-be ledger/tag/package deltas without applying any tag, ledger append, or package combine.
 
-### Dry-run for Jane — exact command
+### Dry-run for a project — exact command
 
 ```bash
 PY="python.exe"
 PYTHONUTF8=1 "$PY" "hopper_integrate.py" \
-  --project Jane \
-  --kb-root "Knowledge_Base" \
+  --project <P> \
+  --kb-root "<P>/Knowledge_Base" \
   --dry-run
 ```
 
-What it outputs for Jane: LAND = no-op verify (305 `DOC*` folders already in
-`Knowledge_Base`); then, per doc, the planned `RDB_METADATA.jsonl` / `READ_METHOD.json` /
-`manifest.read_method` / FULL_TEXT-header tags; a KBIP v1.0 catalog summary (305 docs, all
+What it outputs: LAND = no-op verify (`DOC*` folders already in
+`<P>/Knowledge_Base/`); then, per doc, the planned `RDB_METADATA.jsonl` / `READ_METHOD.json` /
+`manifest.read_method` / FULL_TEXT-header tags; a KBIP v1.0 catalog summary (all docs
 `read_method=Hopper`, `engines_present:["Hopper"]`, table/equation/figure/chart counts); the
-`PROCESSING_LOG`/`KB_CATALOG`/`PROVENANCE_LEDGER` rows that *would* be appended for the 305 Jane docs
+`PROCESSING_LOG`/`KB_CATALOG`/`PROVENANCE_LEDGER` rows that *would* be appended for the project's docs
 (none applied); and the safe-package gate result — all with **zero** writes to the ledgers and zero tag/
 package mutations.
 
@@ -204,5 +204,25 @@ This is the Hopper sibling of the HDARP lane's `/kb-integrate-pipeline` (alias
 **Command**: `/hopper-integrate`
 **Standard**: KB Integration Pipeline (KBIP) v1.0 (`KB_INTEGRATION_PIPELINE_BUILD_PLAN.md` §4 W3)
 **Created**: 2026-06-22
-**Engine pieces**: `{hopper_integrate,kbip_backfill,kbip_catalog,kbip_ledgers,kbip_safepackage}.py` (stdlib-only; eval venv)
-**Proven on**: Jane (305 docs)
+**Engine pieces**: `{hopper_integrate,kbip_backfill,kbip_catalog,kbip_ledgers,kbip_safepackage}.py` (stdlib-only; engine venv)
+**Proven on**: a 305-document corpus (2026-06)
+
+## Layout tolerance (2026-07-16)
+
+The KBIP scripts now support BOTH KB layouts, keeping project-root-layout output byte-identical:
+- **Project-root layout** — KB directly under the project root: `<P>/Knowledge_Base/`.
+- **Technical-nested layout** — KB under `Technical/`: `<P>/Technical/Knowledge_Base/` (used by projects
+  whose KB lives under `Technical/`).
+
+Two path bugs surfaced by a Technical-nested-layout run were fixed (root cause: the scripts assumed the
+project-root layout):
+- `kbip_safepackage.py` — out-dir is resolved layout-tolerantly (if `kb.parent` is already `Technical`,
+  it does NOT re-append `Technical/`). Previously wrote `…/Technical/Technical/KBIP_Integration`.
+- `kbip_backfill.py` — the `RDB_METADATA` `source_relpath` anchor now matches the robert-db harvest's
+  `robertdb_config.json.project_root` (derived layout-tolerantly by stripping a trailing `Technical`
+  segment; overridable with `--project-root`). Previously anchored at `<proj>/Technical`, so native
+  enrichment silently failed to match at harvest and tables defaulted to `transcription_status=L`.
+- `kbip_ledgers.py` — records the real `kb_path`/`output_location` (accepts `--kb-rel`, threaded by
+  the orchestrator; default `Knowledge_Base`). Cosmetic (every join keys on `source_md5`).
+
+See the Robert DB `NATIVE_ENRICHMENT_CONTRACT.md` (§ "`source_relpath` anchor").

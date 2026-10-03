@@ -12,7 +12,7 @@ part-of: Robert Database Framework v1.0
 
 # robert-db-harvest — Stage 2 (HARVEST)
 
-Walk the project's `Knowledge_Base`, discover every table artifact, parse it with
+Walk the project's `Knowledge_Base/`, discover every table artifact, parse it with
 a sniffed convention adapter, and record one `xtables` row per table with an
 immutable `<PJ>-T-NNNNNN` id. Harvest **invents no metadata** of its own: everything
 it parses from a CSV is provenance `mechanical`. It additionally **ingests any HDARP
@@ -42,7 +42,7 @@ view regeneration so the DB and `views/` are consistent after every run.
 1. **Full harvest** (typical first run):
    ```bash
    PYTHONIOENCODING=utf-8 python rdb_harvest.py \
-       --config <P>/robertdb_config.json
+       --config <P>/Technical/RobertDB/robertdb_config.json
    ```
    This discovers docs, sniffs each CSV against `adapters.enabled` (in order),
    parses, mints ids, writes mechanical provenance + columns, raises mechanical
@@ -79,17 +79,30 @@ run once at the end.
 print('docs',c.execute('select count(*) from documents').fetchone()[0]); \
 print('tables',c.execute('select count(*) from xtables').fetchone()[0]); \
 print('parse',dict(c.execute('select parse_status,count(*) from xtables group by parse_status').fetchall()))" \
-       <P>/robertdb.sqlite
+       <P>/Technical/RobertDB/robertdb.sqlite
    ```
    Also review `views/DB_MANIFEST.json` and the harvest run row in `runs`.
 
 ## Convention adapters (sniffed, never assumed)
 
-`marker_no_tables`, `meta_block_then_data` (USSR), `meta_cols_embedded` (Volcker
-c2), `meta_stub_only`, `multirow_header` (ru/translit/en, ru/fr), `source_page_col`,
-`plain_data`. The matched adapter is recorded as `xtables.convention_code`. A
-`plain_data` CSV legitimately yields `not_captured` metadata — that is honest, not a
-defect.
+`marker_no_tables`, `meta_block_then_data` (the `ussr` layout family: metadata header
+block, blank line, then data), `meta_cols_embedded` (the `volcker` layout c2 dialect:
+table_id/source_doc/chunk/page/title columns), `meta_stub_only`, `multirow_header`
+(ru/translit/en, ru/fr), `source_page_col`, `plain_data`. The matched adapter is
+recorded as `xtables.convention_code`. A `plain_data` CSV legitimately yields
+`not_captured` metadata — that is honest, not a defect.
+
+**Leading-preamble n_cols fix (2026-07-15, forward-only).** The data-oriented adapters
+(`plain_data`, `source_page_col`, `multirow_header`) now skip a **delimiter-free leading
+title/caption row** before detecting the header, so a genuinely multi-column table whose
+CSV opens with a comma-free line (e.g. `Table 5: Bank assets, 1900-1950`) is no longer
+mis-read as `n_cols=1`. The header is taken as the first **modal-column-count** row;
+leading rows with a single populated cell are dropped **only when the table's modal
+populated width is >1** (a truly single-column table is left untouched). This is a
+header-detection fix only — it changes `n_cols`/columns, never row content — and is
+**not** applied retroactively: existing harvested rows keep their stored `n_cols` until a
+document is re-harvested (`--rebuild-doc`) for unrelated reasons. No retro re-harvest is
+implied by this change.
 
 ## Outputs
 

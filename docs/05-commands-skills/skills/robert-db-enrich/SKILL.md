@@ -1,7 +1,7 @@
 ---
 name: robert-db-enrich
 version: "1.0"
-description: "Agent-orchestrated recovery of honest table metadata (titles, pages, units, footnotes, two-axis quality) for a Robert database: doc-grouped Opus subagent batches emit JSONL patches per the patch contract; rdb_merge_patches.py validates and merges. Subagents never touch the DB."
+description: "Agent-orchestrated recovery of honest table metadata (titles, pages, units, footnotes, two-axis quality) for a Robert database: doc-grouped Sonnet 5.5 subagent batches (Opus only as a recorded escalation) emit JSONL patches per the patch contract; rdb_merge_patches.py validates and merges. Subagents never touch the DB."
 when-to-use: '"User wants to enrich a project''s harvested tables with recovered metadata, run enrichment batches, or merge enrichment patches into the Robert database."'
 search-hints: "robert db enrich enrichment patch jsonl subagent opus batch doc-grouped merge_patches field_basis not_captured obs_status transcription_status 32k cap chunk-range"
 argument-hint: "[project]"
@@ -24,7 +24,7 @@ files; **only `rdb_merge_patches.py` writes the DB**. Subagents NEVER touch
 > A field is `from_source` ONLY if it is visible verbatim in the table's CSV,
 > its `Tables/*.md`, or the `FULL_TEXT`/`Text` context for that chunk. A title,
 > footnote, or unit that is not visibly present is either `agent_inferred`
-> (defensible from context) or sent as `null` with basis `not_captured`. Never
+> (defensible from context) or sent as a `null` with basis `not_captured`. Never
 > fabricate titles, footnotes, quotes, or page numbers. `from_source` is never
 > downgraded by `agent_inferred` (the merge enforces this).
 
@@ -45,18 +45,27 @@ already-enriched tables are skipped; lift a sample to `transcription_status='V'`
 **only** through the formal `robert-db-audit` spot-check, never here. For a legacy KB
 (no sidecars) this is the full recovery pass exactly as written below.
 
-## Optional: LOCAL-MODEL triage (cut Opus tokens — default OFF)
+## Model choice (Model Efficiency Policy 2026-09-29)
+
+Enrichment subagents run on **Sonnet 5.5** (`model: "sonnet"`) by default —
+see `model-efficiency.md`. Escalate a document to Opus only as a **recorded
+escalation** (a Sonnet batch produced rejects or unreliable metadata on a hard judgment
+case; note the doc id, why, and `escalated_to: opus` in the run notes first). The honesty
+contract and patch contract below are unchanged and are what keep Sonnet output safe:
+`null` + `not_captured` over a guess, and the merger rejects contract violations.
+
+## Optional: LOCAL-MODEL triage (cut subagent tokens — default OFF)
 
 If `kb.enrich_triage.mode` is `draft` in `robertdb_config.json`, run the A4
-local-model triage **before** spawning Opus subagents: the ALGRP A4 champion
-(gemma-4-31B, GBNF-constrained) drafts each pending table's metadata on the 5090;
-a confidence gate auto-commits the high-confidence grounded majority as JSONL
-patches (merged by `rdb_merge_patches.py` unchanged) and writes only the
-low-confidence tables to `enrichment/triage/<run_id>/review_queue.jsonl` — and
-THOSE are the only tables you then hand to Opus subagents below. Harness:
+local-model triage **before** spawning subagents: the ALGRP A4 champion
+(gemma-4-31B, GBNF-constrained) drafts each pending table's metadata on the local
+consumer-GPU machine; a confidence gate auto-commits the high-confidence grounded
+majority as JSONL patches (merged by `rdb_merge_patches.py` unchanged) and writes
+only the low-confidence tables to `enrichment/triage/<run_id>/review_queue.jsonl` —
+and THOSE are the only tables you then hand to subagents below. Harness:
 `scripts/triage/rdb_triage_route.py`; full wiring + GPU smoke test (USER runs the
 server, single-launch discipline): `A4_TRIAGE_HANDOFF.md`.
-Default is **off** (this whole section is skipped) — the Opus-subagent path below
+Default is **off** (this whole section is skipped) — the subagent path below
 is the default and is unchanged.
 
 ## Procedure (doc-grouped, continuous, multi-round)
@@ -72,26 +81,27 @@ batch — select work, spawn agents, merge, select the next round, repeat in-tur
 [print(r[0],r[1]) for r in c.execute(\"select d.doc_id,count(*) n from xtables x join documents d on d.doc_id=x.doc_id \
 where x.enrichment_tier in ('A','B') and x.enrichment_status='pending' and x.is_marker_file=0 \
 group by d.doc_id order by n desc\").fetchall()]" \
-       <P>/robertdb.sqlite
+       <P>/Technical/RobertDB/robertdb.sqlite
    ```
    Choose a `run_id` for the round, e.g. `ENR_20260611_A01`.
 
-2. **Spawn Opus subagents in FOREGROUND, multiple per message.** Each subagent
+2. **Spawn Sonnet 5.5 subagents in FOREGROUND, ≤3 per message** (Opus only per the
+   Model choice section above). Each subagent
    gets **ONE document** (or, for table-dense yearbooks, ONE chunk-range of one
    document — split by chunk-range to respect the 32K output cap, never by
    trimming fields). Each subagent:
-   - reads the document's table CSVs (`CSV_Tables/`), the `Tables/*.md` (USSR
+   - reads the document's table CSVs (`CSV_Tables/`), the `Tables/*.md` (the `ussr`
      layout) and the `FULL_TEXT*.md` / `Text/` chunk context;
    - recovers metadata it can honestly assess for each table;
    - emits **ONE JSONL patch file** to
-     `<doc_id>.jsonl`
+     `Technical/RobertDB/enrichment/patches/<run_id>/<doc_id>.jsonl`
      (one line per table) per `PATCH_CONTRACT.md`;
    - **does not open the database**.
 
 3. **Merge the round.**
    ```bash
    PYTHONIOENCODING=utf-8 python rdb_merge_patches.py \
-       --config <P>/robertdb_config.json \
+       --config <P>/Technical/RobertDB/robertdb_config.json \
        --run-id <run_id> [--dry-run]
    ```
    Run `--dry-run` first to surface rejects, then merge for real. The merger
@@ -114,12 +124,12 @@ group by d.doc_id order by n desc\").fetchall()]" \
 
 ```
 You are enriching table metadata for the Robert Database Framework, document
-<DOC_ID> in project <PROJECT> (code <PJ>). Model: Opus. Run id: <RUN_ID>.
+<DOC_ID> in project <PROJECT> (code <PJ>). Model: Sonnet 5.5. Run id: <RUN_ID>.
 
 INPUTS (read-only — read all that exist for this document):
-  - Tables CSVs:   <PROJECT_ROOT>/<DOC_ID>/CSV_Tables/*.csv
-  - Table notes:   <PROJECT_ROOT>/<DOC_ID>/Tables/*.md      (if present)
-  - Body context:  <PROJECT_ROOT>/<DOC_ID>/FULL_TEXT*.md
+  - Tables CSVs:   <PROJECT_ROOT>/Knowledge_Base/<DOC_ID>/CSV_Tables/*.csv
+  - Table notes:   <PROJECT_ROOT>/Knowledge_Base/<DOC_ID>/Tables/*.md      (if present)
+  - Body context:  <PROJECT_ROOT>/Knowledge_Base/<DOC_ID>/FULL_TEXT*.md
                    or .../Text/*.md   (find the chunk that contains each table)
 TABLE LIST (table_uid -> source CSV relpath), enrich EXACTLY these:
   <TABLE_UID>  <SOURCE_RELPATH>
@@ -127,7 +137,7 @@ TABLE LIST (table_uid -> source CSV relpath), enrich EXACTLY these:
 
 YOUR JOB: for each listed table, recover only what you can honestly assess, and
 write ONE JSON object per line to:
-  <PROJECT_ROOT>/<RUN_ID>/<DOC_ID>.jsonl
+  <PROJECT_ROOT>/Technical/RobertDB/enrichment/patches/<RUN_ID>/<DOC_ID>.jsonl
 
 HONESTY RULES (HARD):
   - NOT CAPTURED is a first-class value. The source page is the authority.

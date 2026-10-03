@@ -2,7 +2,7 @@
 name: robert-db-init
 version: "1.0"
 description: "Scaffold a project's RobertDB workspace and create the canonical robertdb.sqlite from robertdb_config.json — the first stage of the Robert Database Framework build."
-when-to-use: '"User wants to start a Robert database for a project, scaffold RobertDB, or (re)create the empty robertdb.sqlite from a config."'
+when-to-use: '"User wants to start a Robert database for a project, scaffold Technical/RobertDB/, or (re)create the empty robertdb.sqlite from a config."'
 search-hints: "robert db init scaffold create database robertdb sqlite config project_code schema apply meta"
 argument-hint: "[project]"
 allowed-tools: Read, Write, Bash, Glob, Grep, Edit, Agent
@@ -24,8 +24,8 @@ reads and writes. After init the DB has tables but zero documents/tables.
 
 ## Preconditions
 
-- The project has been through `/hdarp-integrate-pipeline` (KB + catalogs exist).
-- A `robertdb_config.json` exists at `RobertDB` per
+- The project has been through `/kb-integrate-pipeline` (KB + catalogs exist).
+- A `robertdb_config.json` exists at `<P>/Technical/RobertDB/` per
   `CONFIG_SPEC.md`. In particular:
   - `framework_version` == `"Robert Database Framework v1.0"` (the lib enforces this).
   - `project_code` is **3 uppercase letters** and is **immutable** once any
@@ -38,7 +38,7 @@ reads and writes. After init the DB has tables but zero documents/tables.
 ## Procedure
 
 1. **Locate or author the config.** Confirm
-   `robertdb_config.json` exists. If authoring it,
+   `<P>/Technical/RobertDB/robertdb_config.json` exists. If authoring it,
    copy the CONFIG_SPEC.md skeleton, set `project`, `project_code`, `project_root`,
    `kb.layout` (`volcker` | `ussr` | `auto`), the `catalogs.*` that actually exist,
    the read-only `unified.*` spine paths, `tiers`, `quality`, `flag_vocabulary`,
@@ -47,7 +47,7 @@ reads and writes. After init the DB has tables but zero documents/tables.
 2. **Run init.**
    ```bash
    PYTHONIOENCODING=utf-8 python rdb_init.py \
-       --config <P>/robertdb_config.json
+       --config <P>/Technical/RobertDB/robertdb_config.json
    ```
    Use `--force` **only** to re-apply schema to an existing DB (idempotent; does
    not drop data). Never `--force` to "start over" on a DB that already has minted
@@ -56,7 +56,7 @@ reads and writes. After init the DB has tables but zero documents/tables.
 3. **Verify.** Confirm the scaffold and stamp:
    ```bash
    PYTHONIOENCODING=utf-8 python -c "import sqlite3,sys; c=sqlite3.connect(sys.argv[1]); print(dict(c.execute('select key,value from meta').fetchall()))" \
-       <P>/robertdb.sqlite
+       <P>/Technical/RobertDB/robertdb.sqlite
    ```
    Expect `schema_version=1.0.0`, `framework_version=Robert Database Framework v1.0`,
    `project`, `project_code`, `created_at`. An `init` row appears in the `runs`
@@ -65,7 +65,7 @@ reads and writes. After init the DB has tables but zero documents/tables.
 ## Outputs
 
 ```
-<P>/RobertDB
+<P>/Technical/RobertDB/
 |-- robertdb_config.json          # input (validated)
 |-- robertdb.sqlite               # canonical DB (schema applied, meta stamped)
 |-- views/                        # (empty until harvest/views)
