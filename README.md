@@ -47,15 +47,15 @@ scattered government reports.
 
 | Layer | Read |
 |---|---|
-| **Document extraction (cloud agent)** | [`docs/frameworks/hdarp.md`](docs/frameworks/hdarp.md) — HDARP v6.3 |
+| **Document extraction (cloud agent)** | [`docs/frameworks/hdarp.md`](docs/frameworks/hdarp.md) — HDARP v6.4 |
 | **Document extraction (offline GPU)** | [`docs/frameworks/hopper.md`](docs/frameworks/hopper.md) — Hopper Line v2 |
 | **Knowledge-base integration** | [`docs/frameworks/kbip.md`](docs/frameworks/kbip.md) — KBIP v1.0 |
 | **Per-project databases** | [`docs/frameworks/robert-db.md`](docs/frameworks/robert-db.md) — Robert DB v1.0 |
-| **Data-series construction** | [`docs/frameworks/anu.md`](docs/frameworks/anu.md) — Anu Framework |
+| **Data-series construction** | [`docs/frameworks/anu.md`](docs/frameworks/anu.md) — Anu Framework v12.4 |
 | **Unified knowledge architecture** | [`docs/frameworks/auka.md`](docs/frameworks/auka.md) — AUKA v1.1 |
 | **Skill + command templates** | [`docs/05-commands-skills/`](docs/05-commands-skills/) |
 
-> **Note on HDARP:** the public [`hdarp`](https://github.com/andenick/hdarp) repo currently ships the **v5.1** OCR-consensus layer, while the protocol documented here is **v6.3** (full v6.3 publication planned).
+> **Note on HDARP:** the public [`hdarp`](https://github.com/andenick/hdarp) repo currently ships the **v5.1** OCR-consensus layer, while the protocol documented here is **v6.4** (full v6.4 publication planned).
 
 ```
    PDFs / scans
@@ -140,4 +140,4 @@ are being reviewed separately; treat the current tree, not the history, as the c
 
 ---
 
-**Frameworks:** HDARP v6.3 · Anu v12.2 · Sraffa 4.0 OCR · Robert DB v1.0 · KBIP v1.0 · Hopper Line v2 (HL2 v1.0) · AUKA v1.1
+**Frameworks:** HDARP v6.4 · Anu v12.4 · Sraffa 4.0 OCR · Robert DB v1.0 · KBIP v1.0 · Hopper Line v2 (HL2 v1.0) · AUKA v1.1
