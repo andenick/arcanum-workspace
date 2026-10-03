@@ -10,7 +10,7 @@ requires: hdarp-chunker
 part-of: HDARP Framework v6.3 (cloud Claude Read-tool — distinct from /hopper local VLM engine)
 ---
 
-> **Scope**: this is the cloud Claude Read-tool HDARP pipeline. `/hopper` (Hopper Line v2 on RTX 5090) produces the same 4-artifact KB shape OFFLINE without API calls. Never call them by each other's names.
+> **Scope**: this is the cloud Claude Read-tool HDARP pipeline. `/hopper` (Hopper Line v2, local GPU) produces the same 4-artifact KB shape OFFLINE without API calls. Never call them by each other's names.
 
 # HDARP Extract — Core Extraction Protocol v6.2
 

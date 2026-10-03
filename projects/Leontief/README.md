@@ -59,4 +59,4 @@ The canonical Use matrix is 71 × 71 (commodity-by-industry). The derived techni
 
 ## License & replication
 
-Dual-licensed (see `LICENSE` / `LICENSES.md`): **code** (Technical/, webapp/, study bundles) under **MIT**; **derived matrices, documentation, and site content** under **CC BY 4.0**. BEA source data is U.S. government public domain. The [`anu/`](anu/) directory contains a complete data-replication package: `series_registry.json` (the canonical data contract), fetch/process/validate scripts, and Data Provenance Records — see [`anu/README.md`](anu/README.md) to reproduce the data.
+Dual-licensed (see `LICENSE` / `LICENSES.md`): **code** (Technical/, webapp/, study bundles) under **MIT**; **derived matrices, documentation, and site content** under **CC BY 4.0**. BEA source data is U.S. government public domain. The ``anu/`` directory contains a complete data-replication package: `series_registry.json` (the canonical data contract), fetch/process/validate scripts, and Data Provenance Records — see ``anu/README.md`` to reproduce the data.

@@ -1,6 +1,6 @@
 ---
 name: hdarp-campaign
-description: "Set up an HDARP (cloud Claude Read-tool) processing campaign from raw PDFs — inventory, dedup, classify, wave plan, batch creation, and documentation. For OFFLINE local-VLM extraction on RTX 5090, use /hopper instead."
+description: "Set up an HDARP (cloud Claude Read-tool) processing campaign from raw PDFs — inventory, dedup, classify, wave plan, batch creation, and documentation. For OFFLINE local-GPU extraction, use /hopper instead."
 when-to-use: '"User wants to set up a new HDARP campaign, process a new folder of PDFs via cloud Claude Read-tool, create waves/batches for sphdarp. If they want offline / local / quota-free / GPU-resident extraction, use /hopper (the Hopper Line v2 engine) instead — both produce 4-artifact KB-ready output but via different stacks."'
 search-hints: "hdarp campaign setup wave batch plan inventory dedup classify initialize cloud sonnet opus"
 allowed-tools: Read, Write, Bash, Glob, Grep, Edit
@@ -11,7 +11,7 @@ part-of: HDARP Framework v6.3 (cloud Claude Read-tool pipeline — distinct from
 
 # HDARP Campaign Setup Skill
 
-> **Scope note**: this skill operates the **cloud Claude Read-tool HDARP pipeline**. The DISTINCT local-GPU `/hopper` skill (Hopper Line v2) produces the same KB shape on the RTX 5090 without any API calls. Pick HDARP for: high accuracy, API quota available, complex content. Pick `/hopper` for: offline / no-quota / bulk / in-copyright corpora. **Never call Hopper "HDARP" or vice versa** — they're separate engines.
+> **Scope note**: this skill operates the **cloud Claude Read-tool HDARP pipeline**. The DISTINCT local-GPU `/hopper` skill (Hopper Line v2) produces the same KB shape on a local consumer GPU without any API calls. Pick HDARP for: high accuracy, API quota available, complex content. Pick `/hopper` for: offline / no-quota / bulk / in-copyright corpora. **Never call Hopper "HDARP" or vice versa** — they're separate engines.
 
 
 

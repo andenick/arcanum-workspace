@@ -12,7 +12,7 @@ part-of: HDARP Framework v6.3 (cloud Claude Read-tool — distinct from Hopper L
 
 > **Two parallel extraction frameworks coexist in the workspace**:
 > - **HDARP** (this skill family): cloud Claude Read-tool pipeline; Sraffa 4.0 OCR; lifecycle in `HDARP_HUB.md`.
-> - **Hopper Line v2** (`/hopper`): offline local VLM engine on a local RTX 5090; spec in `HOPPER_LINE_V2_PROTOCOL.md`.
+> - **Hopper Line v2** (`/hopper`): offline local VLM engine on a local consumer GPU; spec in `HOPPER_LINE_V2_PROTOCOL.md`.
 >
 > Both produce 4-artifact KB-ready output (FULL_TEXT.md + CSV_Tables + equations + figures). Pick HDARP for: API available, high accuracy on hard content. Pick `/hopper` for: offline / no-quota / in-copyright / bulk. Never conflate the names — they are distinct engines.
 
