@@ -1,25 +1,25 @@
 ---
-description: "Parallel HDARP v6.2: CF Progressive Decomposition + Task Hygiene + Batch Continuation + Sonnet Mandatory + Opus Validator + Mandatory Catalog Sync + Error Recovery"
+description: "Parallel HDARP v6.4: Native RDB Enrichment + CF Progressive Decomposition + Task Hygiene + Batch Continuation + Sonnet Mandatory + Opus Validator + Mandatory Catalog Sync + Error Recovery"
 allowed-tools: Bash, Read, Write, Glob, Grep, Task
 argument-hint: "[number]"
 ---
 
-**HDARP Framework v6.3** — see `VERSION_REGISTRY.md`
+**HDARP Framework v6.4** — see `VERSION_REGISTRY.md`
 
-> **Native RDB metadata capture (v6.3):** processors emit one `RDB_METADATA*.jsonl` line per table CSV per `hdarp-processing.md` ("Native RDB Enrichment Capture") + spec `NATIVE_ENRICHMENT_CONTRACT.md`. Same chunk-range/whole-doc + WARN-only validator rules as `sphdarp.md`.
+> **Native RDB metadata capture (v6.4):** processors emit one `RDB_METADATA*.jsonl` line per table CSV per `hdarp-processing.md` ("Native RDB Enrichment Capture") + spec `NATIVE_ENRICHMENT_CONTRACT.md`. Same chunk-range/whole-doc + WARN-only validator rules as `sphdarp.md`.
 
-# Parallel HDARP Command (PHDARP) v6.2
+# Parallel HDARP Command (PHDARP) v6.4
 
 **Command**: `/phdarp [N]`
 **Full Name**: Parallel Hybrid Direct Agent Reading Protocol
-**Version**: 6.2
-**Updated**: 2026-04-28
+**Version**: 6.3
+**Updated**: 2026-06-13
 
 ## 🛑 CRITICAL RULE: NEVER FABRICATE (v6.0)
 
-If you encounter a content filter error (API 400 `Output blocked by content filtering policy`): the **orchestrator** handles recovery via the CF Progressive Decomposition Protocol (v6.0) — bisect the chunk, re-dispatch Sonnet subagents, recursively decompose down to single pages, then OCR only as last resort. See the Content Filter Recovery Protocol section under Phase 2: Error Recovery. For timeouts or other API errors: RECORD the affected chunk in Failures and move on. **DO NOT** generate substitute content, paraphrase from memory, or write block quotes / attributions you haven't verified verbatim from the source PDF. Mark uncertain passages `[approximate]` — a gap marker is always preferable to a fabrication. See `HDARP_CONTENT_FILTER_PATTERNS.md` for the Wave 7 fabrication incident that motivated this rule.
+If you encounter a content filter error (API 400 `Output blocked by content filtering policy`): the **orchestrator** handles recovery via the CF Progressive Decomposition Protocol (v6.0) — bisect the chunk, re-dispatch Sonnet subagents, recursively decompose down to single pages, then OCR only as last resort. See the Content Filter Recovery Protocol section under Phase 2: Error Recovery. For timeouts or other API errors: RECORD the affected chunk in Failures and move on. **DO NOT** generate substitute content, paraphrase from memory, or write block quotes / attributions you haven't verified verbatim from the source PDF. Mark uncertain passages `[approximate]` — a gap marker is always preferable to a fabrication. See `HDARP_CONTENT_FILTER_PATTERNS.md` for the fabrication incident that motivated this rule.
 
-**DO NOT silently substitute extraction methods.** If agent extraction fails, STOP and report. Do not switch to PyMuPDF, bulk scripts, or any non-HDARP method without explicit user approval. See the 2026-05-06 Wave_07 silent degradation incident in sphdarp.md.
+**DO NOT silently substitute extraction methods.** If agent extraction fails, STOP and report. Do not switch to PyMuPDF, bulk scripts, or any non-HDARP method without explicit user approval. See the 2026-05-06 silent degradation incident in sphdarp.md.
 
 ## Scrounger Standard
 
@@ -39,7 +39,7 @@ See `sphdarp-scrounger.md` for the full acceptable-outcomes taxonomy, mandatory 
 
 All DARP commands now integrate with BATCH_STATE.json:
 
-**Location**: {Project}/BATCH_STATE.json
+**Location**: {Project}/Technical/HDARP_Processing/BATCH_STATE.json
 
 **Key Changes**:
 - Command reads batch_to_process from state
@@ -73,7 +73,11 @@ See BATCH_STATE_PROTOCOL.md for full details.
 **Key Distinctions**:
 - **P** = Parallel (all commands have this)
 - **S** = Smart (document-aware batching)
-- **H** = Hybrid (includes OCR body text)
+- **H** = Hybrid — agent-read body text **plus** a Sraffa 4.0 verbatim OCR sibling over the same
+  pages, run for **every** document as a mandatory end-of-run stage and landing in
+  `Knowledge_Base/_OCR_Only/<short_id>/`. Augmentation, never substitution. Canonical rule:
+  `hdarp-processing.md`, "Hybrid body text = two layers". (This row and the "no adaptive routing to
+  sraffa-ocr" note below only *appear* to collide — reconciled in that section.)
 
 ## What's New in v4.5
 
@@ -211,7 +215,7 @@ def classify_document(doc_id, manifest, chunks_dir):
 
 ### phdarp Behavior on SCANNED_BOOK / MEGA_DOC
 
-Classification is **informational only**. phdarp processes all document categories via agent extraction regardless of the detected category. There is no adaptive routing to sraffa-ocr. On encountering a SCANNED_BOOK or MEGA_DOC document, phdarp logs the classification and continues with standard agent processing:
+Classification is **informational only**. phdarp processes all document categories via agent extraction regardless of the detected category. There is no adaptive routing to sraffa-ocr — no document is ever diverted *away from* agent reading on the strength of its category. On encountering a SCANNED_BOOK or MEGA_DOC document, phdarp logs the classification and continues with standard agent processing:
 
 ```
 INFO: BATCH_XXX contains a SCANNED_BOOK doc (XXXX_some_book, 280 chunks).
@@ -220,6 +224,17 @@ Proceeding with agent extraction for all chunks...
 ```
 
 No user action is required. All categories are processed identically via agent extraction.
+
+**Reconciling this with the H row above — which of the two was correct.** **The H row was correct**;
+this section was also correct about what it actually denies. They collided only because "no adaptive
+routing to sraffa-ocr" was being read as "no OCR ever runs." Both stand, unchanged in substance:
+
+* **This section governs routing.** The classifier never diverts a document from agent extraction to
+  OCR. That is the anti-silent-degradation defence and it is untouched.
+* **The H row governs the Hybrid sibling.** A Sraffa 4.0 verbatim OCR layer runs for **every**
+  document at end of run, *in addition to* a complete agent extraction, into
+  `Knowledge_Base/_OCR_Only/<short_id>/`. Being unconditional, it is not routing: nothing is chosen
+  and nothing is diverted. Canonical rule: `hdarp-processing.md`, "Hybrid body text = two layers".
 
 ---
 
@@ -316,7 +331,7 @@ Spawn all agents in parallel using **ONE message** with N+1 Task calls.
 **TASK**: Validate chunks, update catalog, verify chunk management, cleanup artifacts.
 
 **ASSIGNED CHUNKS**: {chunk_list}
-**CATALOG PATH**: HDARP_MASTER_CATALOG.csv
+**CATALOG PATH**: Technical/HDARP_MASTER_CATALOG.csv
 
 ## EXECUTION MODE
 
@@ -325,10 +340,10 @@ Spawn all agents in parallel using **ONE message** with N+1 Task calls.
 ## Phase 1: HDARP Validation
 
 For EACH chunk, verify ALL 4 content types:
-- Tables: CSV_Tables
-- Equations: Equations
-- Figures: Figures
-- Body Text: Text
+- Tables: Knowledge_Base/{doc}/CSV_Tables/
+- Equations: Knowledge_Base/{doc}/Equations/
+- Figures: Knowledge_Base/{doc}/Figures/
+- Body Text: Knowledge_Base/{doc}/Text/
 
 Quality Scoring:
 - v4.0: 27 points (22/27 minimum)
@@ -348,7 +363,7 @@ After validation, update HDARP_MASTER_CATALOG.csv:
 
 Verify chunk integrity:
 1. Count chunk PDFs in HDARP_Processing/{doc}/chunks/
-2. Count processing summaries in {doc}
+2. Count processing summaries in Knowledge_Base/{doc}/
 3. Compare with manifest.json chunk_count
 4. Flag discrepancies in validation report
 
@@ -383,7 +398,8 @@ After PASSING validation, cleanup chunk artifacts:
 A. Tables -> CSV Files (DARP Vision)
 B. Equations -> LaTeX
 C. Figures -> Markdown Descriptions
-D. Body Text -> Text Storage
+D. Body Text -> Text Storage (agent-read, with chunk markers; the Sraffa 4.0 verbatim sibling is a
+   run-level stage — see `hdarp-processing.md`, "Hybrid body text = two layers")
 
 ## Critical Requirements
 
@@ -677,11 +693,11 @@ See `SUBAGENT_MANAGEMENT_GUIDE.md` for:
 
 ---
 
-**Command Version**: 6.1 Batch Continuation + Sonnet Mandatory + Opus Validator + Mandatory Catalog Sync + Error Recovery
+**Command Version**: 6.3 Native RDB Enrichment + Batch Continuation + Sonnet Mandatory + Opus Validator + Mandatory Catalog Sync + Error Recovery
 **Status**: PRODUCTION READY
 **Created**: 2025-12-22
-**Updated**: 2026-04-06
-**HDARP Protocol**: v6.3 (Batch Continuation, Sonnet Mandatory, Opus Validator, 10-chunk batching)
+**Updated**: 2026-06-13
+**HDARP Protocol**: v6.3 (Native RDB Enrichment, Batch Continuation, Sonnet Mandatory, Opus Validator, 10-chunk batching)
 **New in v5.1**: Automatic batch continuation (Phase 4), `--single` flag, inter-batch summaries, BLOCKED detection
 **v5.0**: Sonnet Mandatory model policy, Opus validator, 10-chunk batch sizing
 **v4.5**: Mandatory catalog synchronization, Phase 3 catalog sync, unified features
@@ -702,4 +718,4 @@ This command is step **3** (PROCESS) in the HDARP lifecycle:
 **ALL 4 content types are MANDATORY per chunk.** If a chunk has no tables/equations/figures, the agent must explicitly confirm "none found" — silent omission is not acceptable.
 
 <!-- HDARP Framework v6.2 (2026-05-29): unified per VERSION_REGISTRY.md and HDARP_v6.2_UPGRADE_PLAN.md. Prior version stamps retained in history above. -->
-<!-- HDARP Framework v6.3 (2026-06-13): native RDB enrichment capture added. -->
+<!-- HDARP Framework v6.3 (2026-06-13): native RDB enrichment capture added; Sraffa engine remains 4.0. -->

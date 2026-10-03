@@ -1,18 +1,18 @@
 ---
-description: "Parallel DARP v6.2: Task Hygiene + Batch Continuation + Sonnet Mandatory + Opus Validator + Mandatory Catalog Sync + Error Recovery (NO OCR)"
+description: "Parallel DARP v6.4: Native RDB Enrichment + Task Hygiene + Batch Continuation + Sonnet Mandatory + Opus Validator + Mandatory Catalog Sync + Error Recovery (NO OCR)"
 allowed-tools: Bash, Read, Write, Glob, Grep, Task
 argument-hint: "[number]"
 ---
 
-**HDARP Framework v6.3** — see `VERSION_REGISTRY.md`
+**HDARP Framework v6.4** — see `VERSION_REGISTRY.md`
 
-> **Native RDB metadata capture (v6.3):** PDARP extracts tables (no OCR). Processors emit one `RDB_METADATA*.jsonl` line per table CSV per `hdarp-processing.md` ("Native RDB Enrichment Capture") + spec `NATIVE_ENRICHMENT_CONTRACT.md`. Same chunk-range/whole-doc + WARN-only validator rules as `sphdarp.md`.
+> **Native RDB metadata capture (v6.4):** PDARP extracts tables (no OCR). Processors emit one `RDB_METADATA*.jsonl` line per table CSV per `hdarp-processing.md` ("Native RDB Enrichment Capture") + spec `NATIVE_ENRICHMENT_CONTRACT.md`. Same chunk-range/whole-doc + WARN-only validator rules as `sphdarp.md`.
 
-# Parallel Direct Agent Reading Protocol (PDARP) v6.2
+# Parallel Direct Agent Reading Protocol (PDARP) v6.4
 
 **Command**: /pdarp [N]
 **Full Name**: Parallel Direct Agent Reading Protocol
-**Version**: 6.2
+**Version**: 6.3
 **Created**: 2026-01-01
 **Updated**: 2026-04-14
 
@@ -20,7 +20,7 @@ argument-hint: "[number]"
 
 If you encounter a content filter error, timeout, or any API error: RECORD the affected chunks in Failures and CONTINUE. **DO NOT** generate substitute content, paraphrase from memory, or write block quotes / attributions you haven't verified verbatim from the source PDF. Mark uncertain passages `[approximate]` — gap markers are always preferable to fabrications. See `HDARP_CONTENT_FILTER_PATTERNS.md`.
 
-**DO NOT silently substitute extraction methods.** If agent extraction fails, STOP and report. Do not switch to PyMuPDF, bulk scripts, or any non-DARP method without explicit user approval. See the 2026-05-06 Wave_07 silent degradation incident in sphdarp.md.
+**DO NOT silently substitute extraction methods.** If agent extraction fails, STOP and report. Do not switch to PyMuPDF, bulk scripts, or any non-DARP method without explicit user approval. See the 2026-05-06 silent degradation incident in sphdarp.md.
 
 ## Scrounger Standard
 
@@ -42,7 +42,7 @@ See `sphdarp-scrounger.md` for the full acceptable-outcomes taxonomy and retry b
 
 All DARP commands now integrate with BATCH_STATE.json:
 
-**Location**: {Project}/BATCH_STATE.json
+**Location**: {Project}/Technical/HDARP_Processing/BATCH_STATE.json
 
 **Key Changes**:
 - Command reads batch_to_process from state
@@ -339,11 +339,14 @@ When spawning processor agents, use this structure:
 
 ## DARP Protocol (3 Content Types - NO OCR)
 
+> **DARP-only — no body OCR, and the Hybrid mandate does not apply.** HDARP's mandatory Stage-5 verbatim OCR sibling (`/sraffa-ocr --augment`, see `CLAUDE.md` → HDARP lifecycle) belongs to the **H** commands. ``/pdarp`` extracts no body text, so it produces no sibling and is never gated on one. Use ``/phdarp`` when body text is needed.
+
+
 A. Tables -> CSV Files (DARP Vision, 98%+ accuracy)
 B. Equations -> LaTeX (100% target)
 C. Figures -> Markdown Descriptions (200+ words per figure)
 
-**DO NOT EXTRACT**: Body text (use /phdarp for OCR)
+**DO NOT EXTRACT**: Body text (use /phdarp for OCR). No body text means no Hybrid Stage-5 sibling — that mandate is the H commands'.
 
 ## Critical Requirements
 
@@ -401,7 +404,7 @@ Create validation report with:
 After processing, each chunk contributes to:
 
 ```
-{document_name}
+Knowledge_Base/{document_name}/
 ├── CSV_Tables/
 │   ├── chunk_{N}_table_001.csv
 │   ├── chunk_{N}_table_002.csv
@@ -670,10 +673,10 @@ Skip Phase 4 entirely. Command ends after Phase 3.
 
 ---
 
-**Command Version**: 6.1 Batch Continuation + Sonnet Mandatory + Opus Validator + Mandatory Catalog Sync + Error Recovery
+**Command Version**: 6.3 Native RDB Enrichment + Batch Continuation + Sonnet Mandatory + Opus Validator + Mandatory Catalog Sync + Error Recovery
 **Status**: PRODUCTION READY
 **Created**: 2026-01-01
-**Updated**: 2026-04-06
+**Updated**: 2026-06-13
 **Protocol**: DARP-only (3 content types, no OCR)
 **Quality Scoring**: 22 points (18/22 minimum)
 **New in v5.1**: Automatic batch continuation (Phase 4), `--single` flag, inter-batch summaries, BLOCKED detection

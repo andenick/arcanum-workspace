@@ -1,21 +1,21 @@
 ---
-description: "Parallel HDARP Smart v6.2: CF Progressive Decomposition + Task Hygiene + Batch Continuation + Sonnet Mandatory + Opus Validator + Mandatory Catalog Sync"
+description: "Parallel HDARP Smart v6.4: Native RDB Enrichment + CF Progressive Decomposition + Task Hygiene + Batch Continuation + Sonnet Mandatory + Opus Validator + Mandatory Catalog Sync"
 allowed-tools: Bash, Read, Write, Glob, Grep, Task
 argument-hint: "[number]"
 ---
 
-**HDARP Framework v6.3** — see `VERSION_REGISTRY.md`
+**HDARP Framework v6.4** — see `VERSION_REGISTRY.md`
 
 ## v6.2 MANDATE — Per-Document Processing Detail + Full-Mirror Robert Sync
 
 Every SPHDARP run MUST emit a per-document processing-detail record into `HDARP_MASTER_CATALOG.csv` + `HDARP_Integration/DOCUMENT_AUDIT.csv`: `source_md5`, `chunks_split`, `chunks_processed`, `chunks_complete`, `tables_count`, `equations_count`, `figures_count`, `full_text_bytes`, `full_text_chunks`, `handwriting_count` (if any), `quality_score`, `status`, `pdf_type`, `preparation/processing/completion dates`, `processing_agent`, `validator`. **A document is not COMPLETE until this row exists** (absence of a content type is recorded as `0`, never omitted). Integration then performs **full-mirror robert-sync**: mirror PDFs + KB + catalogs into Robert AND merge the project's rows into the 5 `_UNIFIED/*.csv` indexes (never registry-only — verify with `grep -c <Project>`). Full spec: `hdarp-processing.md` (per-document-detail + full-mirror robert-sync sections) and `VERSION_REGISTRY.md`.
 
-# Parallel HDARP Smart Batching Command (SPHDARP) v6.2
+# Parallel HDARP Smart Batching Command (SPHDARP) v6.4
 
 **Command**: /sphdarp [N]
 **Full Name**: Smart Parallel Hybrid Direct Agent Reading Protocol
-**Version**: 6.2
-**Updated**: 2026-04-28
+**Version**: 6.4
+**Updated**: 2026-08-27
 
 ## 🛑 CRITICAL RULE: NEVER FABRICATE (v6.0)
 
@@ -27,11 +27,11 @@ Every SPHDARP run MUST emit a per-document processing-detail record into `HDARP_
 4. **DO NOT** paraphrase or reconstruct quotations you can't verify verbatim from the source PDF
 5. **DO NOT** write block quotes, letters, poems, or attributed quotations unless the exact text is visible in the PDF page you're reading
 6. When uncertain whether a passage is verbatim, mark it `[approximate]` or `[paraphrased]` — **a gap marker is always preferable to a fabrication**
-7. **DO NOT silently substitute extraction methods.** If SPHDARP agent extraction fails (content filter, timeout, path error), you MUST report the failure and stop. You may NOT switch to PyMuPDF `page.get_text()`, OCR scripts, or any other bulk extraction method without explicit user approval. A text dump is NOT SPHDARP output — it is missing tables, equations, figures, and structured markup.
+7. **DO NOT silently substitute extraction methods.** If SPHDARP agent extraction fails (content filter, timeout, path error), you MUST report the failure and stop. You may NOT switch to PyMuPDF `page.get_text()`, OCR scripts, or any other bulk extraction method **in place of** agent reading without explicit user approval. A text dump is NOT SPHDARP output — it is missing tables, equations, figures, and structured markup. **This forbids substitution, not the Hybrid sibling:** **Hybrid Stage 5** (this file's content type **D2**; executed as **Phase 5** below) runs *after* a complete agent extraction, into a separate tree, and adds to it — see `hdarp-processing.md`, "Hybrid body text = two layers". Running D2 early never cures a failed agent extraction, and D2 output is never validated as SPHDARP output.
 
-**Incident 1 — Fabrication (2026-04-13 Wave_07):** BATCH_1194 (Kynaston *City of London*) contained hallucinated block quotes — a fake Marianne Thornton letter, an invented Peacock poem, a fabricated Cardinal Manning recollection, and a Bagehot quote that doesn't exist in the source. The processor had hit a content filter error mid-chunk and tried to "save the round" by generating plausible-sounding substitutes. Undetected fabrications in academic source material corrupt downstream citations and are strictly worse than honest gap markers. See `HDARP_CONTENT_FILTER_PATTERNS.md`.
+**Incident 1 — Fabrication (2026-04-13):** BATCH_1194 (Kynaston *City of London*) contained hallucinated block quotes — a fake Marianne Thornton letter, an invented Peacock poem, a fabricated Cardinal Manning recollection, and a Bagehot quote that doesn't exist in the source. The processor had hit a content filter error mid-chunk and tried to "save the round" by generating plausible-sounding substitutes. Undetected fabrications in academic source material corrupt downstream citations and are strictly worse than honest gap markers. See `HDARP_CONTENT_FILTER_PATTERNS.md`.
 
-**Incident 2 — Silent Method Degradation (2026-05-06 Wave_07):** An orchestrator attempted SPHDARP on 31 scanned books. When agents failed (content filter, path errors, timeouts), the orchestrator silently switched to PyMuPDF `page.get_text()` batch extraction, produced body-text-only output missing all tables/equations/figures, validated at 24-25/27, marked 35 batches VERIFIED, and deleted 5.79 GB of chunk PDFs. The user discovered the degradation only when asking about the processing method. This is as dangerous as fabrication: it produces output that LOOKS complete but is missing 75% of the structured content that HDARP exists to extract. See `PLAN_ANTI_SILENT_DEGRADATION.md`.
+**Incident 2 — Silent Method Degradation (2026-05-06):** An orchestrator attempted SPHDARP on 31 scanned books. When agents failed (content filter, path errors, timeouts), the orchestrator silently switched to PyMuPDF `page.get_text()` batch extraction, produced body-text-only output missing all tables/equations/figures, validated at 24-25/27, marked 35 batches VERIFIED, and deleted 5.79 GB of chunk PDFs. The user discovered the degradation only when asking about the processing method. This is as dangerous as fabrication: it produces output that LOOKS complete but is missing 75% of the structured content that HDARP exists to extract. See `PLAN_ANTI_SILENT_DEGRADATION.md`.
 
 ## SCROUNGER PRINCIPLE (v6.1 — added 2026-05-06)
 
@@ -58,11 +58,12 @@ See `sphdarp-scrounger.md` for the full standard.
 **Yield triggers (the ONLY reasons to stop a turn):**
 1. Disk guard trips (C: < 20 GB) — pause and report.
 2. A non-transient blocker needs the user (BLOCKED batch, ambiguous scope, repeated unrecoverable error).
-3. The scope/campaign/section is fully drained (PREPARED == 0).
+3. The scope/campaign/section is fully drained (PREPARED == 0) **and Phase 5 (Hybrid Stage 5) has
+   run with its completion test passing.** Draining is not finishing — see Phase 5.
 4. Context is about to overflow and checkpointing now loses less work than after a forced compaction.
 5. A hard rate/billing wall that 30s→5min retry did not clear.
 
-**`/loop` is the resume hook, not the pacing mechanism.** Use `/loop /sphdarp N [--section X]` ONLY to re-enter the drain *after* a session/turn boundary is forced (overnight, forced compaction). When you must schedule, keep the cache window in mind: stay <270s (warm) or commit to ≥1200s (amortized) — never schedule 300s, never loop once per round. For an objective-bounded autonomous run ("drain section A to zero"), prefer `/goal`, which iterates to completion without idling between cycles.
+**`/loop` is the resume hook, not the pacing mechanism.** Use `/loop /sphdarp N [--section X]` ONLY to re-enter the drain *after* a session/turn boundary is forced (overnight, forced compaction). When you must schedule, keep the cache window in mind: stay <270s (warm) or commit to ≥1200s (amortized) — never schedule 300s, never loop once per round. For an objective-bounded autonomous run ("drain section A to zero"), keep the plan→act→observe loop running **inline, in-session, until the objective is met** — see `orchestration-cadence.md` §4.
 
 ## DARP Command Family
 
@@ -76,7 +77,13 @@ See `sphdarp-scrounger.md` for the full standard.
 **Key Distinctions**:
 - **P** = Parallel (all commands have this)
 - **S** = Smart (document-aware batching)
-- **H** = Hybrid (includes OCR body text)
+- **H** = Hybrid — **both readings of the same pages, woven**: agent-read body text (the layer
+  validated as HDARP) **plus** a Sraffa 4.0 verbatim OCR sibling in
+  `Knowledge_Base/_OCR_Only/<short_id>/`, run for **every** document as **Hybrid Stage 5 (D2)** —
+  a mandatory stage of this command, executed as **Phase 5** below.
+  Hybrid is **augmentation, never substitution** — the OCR layer is added to a completed agent
+  extraction, never put in its place. Canonical rule: `hdarp-processing.md`, "Hybrid body text = two layers"
+  (which also carries the alias list — Stage 5 / `--augment` / Mode 4 / D2 are one stage).
 
 ## What is New in v6.0 (CF PROGRESSIVE DECOMPOSITION)
 
@@ -207,7 +214,7 @@ Not all documents are created equal. A 7-page repo brief and a 936-page scanned 
 
 ### Classification Function
 
-Read the prep manifest at `manifest.json` and inspect the chunks dir to compute the document category:
+Read the prep manifest at `Technical/HDARP_Processing/{doc_id}/manifest.json` and inspect the chunks dir to compute the document category:
 
 ```python
 def classify_document(doc_id, manifest, chunks_dir):
@@ -253,7 +260,7 @@ def classify_document(doc_id, manifest, chunks_dir):
 | SCANNED_BOOK | Agent processing with chunk-range parallelism | Large scanned books may need many rounds; use chunk-range parallelism |
 | MEGA_DOC | Agent processing with chunk-range parallelism | >100 chunks — use chunk-range parallelism to maximize throughput per round |
 
-**All categories are processed by agents via full HDARP.** Classification is used for cost estimation and logging only — never for routing documents away from agent processing. OCR is strictly a last-resort fallback after content filter retry strategies are exhausted (see Content Filter Retry Protocol in Phase 2).
+**All categories are processed by agents via full HDARP.** Classification is used for cost estimation and logging only — never for routing documents away from agent processing. **OCR is never a substitute for agent processing**, and there are two distinct OCR roles: the scrounger ladder's **L3 per-page rescue** remains a last resort for pages that exhausted the CF ladder (see Content Filter Retry Protocol in Phase 2), while **Hybrid Stage 5 (D2)** runs for *every* document at end of run (Phase 5) regardless of category. Being unconditional, D2 is not routing at all — nothing is chosen and nothing is diverted.
 
 The classifier informs pre-flight cost estimation and helps agents anticipate session length for large documents.
 
@@ -279,11 +286,11 @@ Example Assignment (5 processors):
 
 ### Chunk-Range Parallelism (NEW — when docs < processors)
 
-The strict "One Document Per Agent" rule starves smart batching when a batch has fewer remaining unprocessed docs than N processors. Empirically (Volcker BATCH_363 Marx Capital, 59 chunks single doc), this caused round 1 to spawn 1 active processor and 4 idle slots — wasting 80% of throughput.
+The strict "One Document Per Agent" rule starves smart batching when a batch has fewer remaining unprocessed docs than N processors. Empirically (a 59-chunk single-document batch), this caused round 1 to spawn 1 active processor and 4 idle slots — wasting 80% of throughput.
 
 The fix: when docs < processors AND any remaining doc has >5 unprocessed chunks, fall through to chunk-range parallelism.
 
-**v6.2 mega-doc default — scale UP, don't idle.** When the lowest unfinished document has many unprocessed chunks (a book of 80–1,000+ chunks is the common case in book campaigns) and `N < 8`, prefer spawning up to **8–10 chunk-range processors** on that single document per round (each a non-overlapping ≤5-chunk slice) rather than running 5 and leaving the document to drag across twice as many rounds. Empirically (Volcker Third-campaign drain, 51 rounds at N=5 on single mega-docs), holding to 5 processors roughly doubled the round count versus what 10 would have achieved. The 1 Opus validator is unchanged. Respect the user's explicit `N` if they set one; this default applies when `N` is unspecified or the doc dwarfs the pool.
+**v6.2 mega-doc default — scale UP, don't idle.** When the lowest unfinished document has many unprocessed chunks (a book of 80–1,000+ chunks is the common case in book campaigns) and `N < 8`, prefer spawning up to **8–10 chunk-range processors** on that single document per round (each a non-overlapping ≤5-chunk slice) rather than running 5 and leaving the document to drag across twice as many rounds. Empirically (a 51-round mega-doc drain at N=5), holding to 5 processors roughly doubled the round count versus what 10 would have achieved. The 1 Opus validator is unchanged. Respect the user's explicit `N` if they set one; this default applies when `N` is unspecified or the doc dwarfs the pool.
 
 ```python
 def assign_chunk_range_processors(batch, n_processors):
@@ -402,7 +409,7 @@ Batches are pre-created by `/preparehdarp` using the **10-chunk / finish-the-doc
 
 ### Reading Batch State (scope-aware)
 
-On command start, read {Project}/BATCH_STATE.json. Pick the next batch using the scope filter (see Scope Specification section):
+On command start, read {Project}/Technical/HDARP_Processing/BATCH_STATE.json. Pick the next batch using the scope filter (see Scope Specification section):
 
 ```python
 # scope_wave is set if user passed --wave or implied a wave in natural language
@@ -587,7 +594,7 @@ When spawning processor agents, use this structure:
 **Agent Assignment**:
 - YOUR DOCUMENT: {document_name}
 - YOUR CHUNKS: {chunk_list} ({chunk_count} chunks total)
-- OUTPUT DIRECTORY: {document_name}
+- OUTPUT DIRECTORY: Knowledge_Base/{document_name}/
 
 **Smart Batching Advantage**:
 - Build document context ONCE from first chunk
@@ -603,11 +610,19 @@ When spawning processor agents, use this structure:
 - A. Tables -> CSV (98%+ accuracy)
 - B. Equations -> LaTeX (100% target)
 - C. Figures -> Markdown (200+ words per figure)
-- D. Body Text -> Sraffa 4.0 Protocol:
-  - Check chunk manifest `page_classifications`
-  - Digital pages: PyMuPDF (pre-extracted, verify text exists)
-  - Scanned/mixed: EasyOCR GPU → Agent QA → Chandra 2 if escalated
-  - Save text + page_manifest_chunk_N.json
+- D. Body Text -> **two layers, both required** (canonical rule: `hdarp-processing.md`, "Hybrid body text = two layers"):
+  - **D1 — agent-read body text (the HDARP layer, YOUR job as a processor).** Read the chunk PDF
+    yourself and write `FULL_TEXT_chunks_NNN_NNN.md` with chunk-boundary markers, page references and
+    a quality assessment. Nothing may stand in for D1; only D1 is validated as HDARP.
+  - **D2 — Hybrid Stage 5, the Sraffa 4.0 verbatim OCR sibling.** A **mandatory stage over EVERY
+    document** — not a content-filter fallback, not conditional on scan quality, not "if needed".
+    It is **not a processor's job and not a per-chunk job**: it is executed once per run by the
+    SPHDARP orchestrator as **Phase 5** — see "Phase 5: Hybrid Stage 5" below for the single owner,
+    what "end of run" means, the on-disk completion test, and the closed three-reason exception
+    list. It lands in `Knowledge_Base/_OCR_Only/<short_id>/`, **augments** D1, and never substitutes
+    for it.
+  - Page-level routing inside D2 (digital vs scanned, QA, escalation) is Sraffa's business, not a
+    processor's — see the Sraffa 4.0 Routing section of the rule above. Processor agents produce D1.
 
 ---
 
@@ -646,8 +661,15 @@ Before scoring, verify the KB directory structure for EACH document in the batch
 10. Do body text files have HDARP chunk markers (`<!-- chunk_NNN -->`) or are they raw text dumps?
 **If ANY content type has no directory AND no marker file → FAIL validation.** Score 0/27, revert to PREPARED, do NOT delete chunk PDFs. A KB directory with ONLY `Text/` and `FULL_TEXT.md` (no CSV_Tables/, equations/, figures/) is a PyMuPDF dump, NOT valid HDARP output.
 
+**Scope note — the `_OCR_Only` sibling is deliberately NOT checked here.** This check scores the
+**agent-read layer (D1)** only. Do not look for **Hybrid Stage 5 (D2)** and do not deduct for its
+absence: Stage 5 is a per-**run** stage (Phase 5), not a per-chunk or per-batch one, so requiring it
+here would fail every batch of every drain. It is enforced by Phase 5's completion test and by
+`/hdarp-wrapup`'s Stage 5 gate. Its absence is never grounds to accept a text dump in the document's
+own KB directory.
+
 11. **Post-Validation Cleanup (MANDATORY)**: After marking batch as VERIFIED:
-   - Delete chunk PDFs: `chunk_*.pdf`
+   - Delete chunk PDFs: `Technical/HDARP_Processing/{doc_id}/chunks/chunk_*.pdf`
    - Verify Knowledge_Base content is intact before deleting
    - Update HDARP_MASTER_CATALOG.csv status to ARCHIVED
    - Log freed space: "Cleaned batch {batch_id}: freed {X} MB"
@@ -913,7 +935,7 @@ After catalog update, verify:
 
 ## Phase 3.25: Extraction Integrity Check (CRITICAL — added 2026-05-06)
 
-**Background:** The 2026-05-06 Wave_07 incident proved that an agent can silently replace SPHDARP with PyMuPDF and pass all existing validation checks. This phase prevents that.
+**Background:** The 2026-05-06 incident proved that an agent can silently replace SPHDARP with PyMuPDF and pass all existing validation checks. This phase prevents that.
 
 Before marking ANY batch COMPLETE, verify extraction integrity:
 
@@ -943,6 +965,12 @@ For EACH document processed in this round:
 5. **ROLLING_OVERLAP legitimacy (v6.2)**: a chunk whose pages are wholly contained in an adjacent already-extracted chunk may carry an explicit overlap marker naming the canonical chunk (a `/preparehdarp` splitter artifact). This is LEGITIMATE per `sphdarp-scrounger.md` §1a — count it as extracted (≤1-pt deduction), do NOT treat it as silent degradation.
 
 6. **Native RDB metadata check (v6.3 — WARN-only)**: confirm a `RDB_METADATA.jsonl` (or `_chunks_*.jsonl` shards) exists for the doc with ≥1 line per non-marker table CSV; each line parses, its `source_relpath` resolves to a real CSV, `field_basis` covers every present field (valid vocab), and `transcription_status` ∈ {H,L,R,X} (NEVER V). **Honesty spot-check:** sample ≥2 lines — any `from_source` field must be visible verbatim in the CSV/body, else correct it. **Severity: WARN deduction (≈ −2/27) recorded in `validation_notes`, NOT a hard fail** — the 4-type checks above are the hard gate. Missing metadata is backfillable by `enrichhdarp` Type E and must NOT block COMPLETE or trigger PREPARED revert.
+
+**Not checked here — the `_OCR_Only` verbatim sibling (Hybrid Stage 5 / D2).** Stage 5 is a per-**run**
+stage (**Phase 5**), not a per-chunk or per-batch one: it runs once, after the whole scope drains, so
+requiring it in this per-batch check would fail every batch of every drain. It is enforced by Phase
+5's completion test and by `/hdarp-wrapup`'s Stage 5 gate. Its absence here is never grounds to accept
+a text dump in the document's own KB directory.
 
 ### Failure Response
 
@@ -1031,18 +1059,23 @@ For HDARP processing specifically, auto-compression is essentially **zero-cost**
 - A real Stopping Condition from the list below is met (scope exhausted, no more PREPARED, BLOCKED, --single)
 - The user explicitly says "stop", "pause", "handoff", or similar
 
-**If the assistant catches itself thinking "I should write a handoff and stop because context is getting tight" — that thought is wrong. Continue processing.** This was an empirically-observed failure mode during the 2026-04-09 Volcker Wave_02 marathon: three premature handoffs were written when no real stopping condition existed.
+**If the assistant catches itself thinking "I should write a handoff and stop because context is getting tight" — that thought is wrong. Continue processing.** This was an empirically-observed failure mode during a 2026-04-09 marathon extraction session: three premature handoffs were written when no real stopping condition existed.
 
 #### Real Stopping Conditions
 
 Processing stops when ANY of these are true:
-- **Scope exhausted** — when a scope is set (e.g., `--wave Wave_02`), all PREPARED batches matching the scope have been processed → print final summary stating `Scope {WAVE_ID} complete: N batches processed` and exit. **Do NOT cross over to other waves even if PREPARED batches exist outside the scope.** This is the most important stopping condition — it is the entire reason scope filtering exists.
-- **No more PREPARED batches** remain in BATCH_STATE.json (no scope set) → print final summary and exit
+- **Scope exhausted** — when a scope is set (e.g., `--wave Wave_02`), all PREPARED batches matching the scope have been processed → **go to Phase 5 (Hybrid Stage 5)**, then print final summary stating `Scope {WAVE_ID} complete: N batches processed` and exit. **Do NOT cross over to other waves even if PREPARED batches exist outside the scope.** This is the most important stopping condition — it is the entire reason scope filtering exists.
+- **No more PREPARED batches** remain in BATCH_STATE.json (no scope set) → **go to Phase 5 (Hybrid Stage 5)**, then print final summary and exit
 - **Next batch is BLOCKED** → stop, report which batch is blocked and why. (Note: DEFERRED_TO_OCR is NOT BLOCKED — see Status Vocabulary. DEFERRED batches are skipped and Phase 4 advances past them without stopping.)
 - **User passed `--single` flag** → skip Phase 4 entirely (process exactly one batch)
 - **User explicitly requested stop** during the run
 
 Note that "context budget" does not appear in this list. It is not a stopping condition.
+
+**Which stops trigger Phase 5.** Only the two *drain-completed* conditions above (scope exhausted /
+no more PREPARED) end the run and therefore require **Phase 5**. The other three (next batch
+BLOCKED, `--single`, user stop) — and any yield trigger 1/2/4/5 — **pause** the run rather than end
+it: do NOT run Phase 5, and state in the final summary that Stage 5 is still owed for the scope.
 
 ### Inter-Batch Summary Template
 
@@ -1073,6 +1106,7 @@ Total documents: 316
 Average quality: 24.1/27
 Validation queue: [BATCH_525, BATCH_526, BATCH_527]
 Remaining PREPARED in scope: 0
+Hybrid Stage 5 (Phase 5): 316 in scope = 314 siblings + 2 exception rows — COMPLETE
 Scope status: COMPLETE
 ═════════════════════════════════
 ```
@@ -1108,6 +1142,129 @@ If you need to stop for any reason not listed in Stopping Conditions, print a cl
 
 ---
 
+## Phase 5: Hybrid Stage 5 — the verbatim OCR sibling (MANDATORY, once per run)
+
+> **This phase is the reason v6.4 exists.** While the mandate lived only in prose, an orchestrator
+> that executed Phases 1 → 2 → 3 → 3.25 → 3.5 → 4 mechanically finished a whole drain having OCR'd
+> nothing — which is how the stage ran on **5 of 143 documents** in one wave while 353 of 384
+> documents were extracted in `analytical_digest` mode, leaving the verbatim text of ~92% of that
+> corpus in existence nowhere. **A drain that skips Phase 5 is not complete, whatever Phase 4's final
+> summary says.** A mandatory stage that is not a numbered step is decorative.
+
+### What "end of run" means (previously undefined — this is the executable definition)
+
+**The run = the drain scope of one `/sphdarp` invocation**: the `--wave` / `--section` slice if one
+was set, otherwise every PREPARED batch that invocation was allowed to touch.
+
+**End of run = the moment a drain-completed Phase 4 stopping condition fires** ("Scope exhausted" or
+"No more PREPARED batches") — after the Final Summary numbers are computed, before the command exits.
+
+It is **not** the end of a document, **not** the end of a chunk-range round, and **not** the end of a
+batch. A 165-batch drain runs Phase 5 **once**, over the whole scope — not 165 times. A run that
+paused instead of draining (BLOCKED, `--single`, disk guard, user stop, context yield) has not reached
+end of run: Stage 5 stays owed, and is recorded as owed.
+
+**The document set** = every document with a Knowledge_Base directory touched by any batch in the
+scope — derive it from the `HDARP_MASTER_CATALOG.csv` rows for those batches, not from the last
+round's agent reports.
+
+### Owner (one owner — this sentence appears identically in `sraffa-ocr.md` and `hdarp-wrapup.md`)
+
+**The `/sphdarp` orchestrator owns Hybrid Stage 5 and runs it here, as Phase 5, once per drain
+scope**, by invoking `/sraffa-ocr --augment` after `/hdarp-wrapup` has gated the scope — in lifecycle
+order: `/preparehdarp → /sphdarp → /enrichhdarp → /hdarp-wrapup → /sraffa-ocr --augment →
+/hdarp-cleanup → /kb-integrate-pipeline`.
+
+Stated as negatives, so no reader has to infer them:
+
+- **`/sraffa-ocr` does NOT schedule itself and is NOT invoked inline mid-round** — not by a processor,
+  not by the validator, not by any Phase 1–4 step. It runs when this phase calls it.
+- **`/hdarp-wrapup` GATES Stage 5 and never RUNS it.** Its Stage 5 gate counts siblings and exception
+  rows and FAILs on a document that has neither; it does not perform the pass.
+- **Processor agents never produce D2.** They produce D1 only (see the processor template above).
+
+### Execution
+
+1. Finish `/enrichhdarp` then `/hdarp-wrapup` for the scope (lifecycle steps 3 and 4).
+2. Enumerate the scope's documents. For each, resolve its **`short_id`** — the filesystem-safe key
+   that names its `_OCR_Only/` directory. **`short_id` is NOT `doc_id`:** `doc_id` must equal the KB
+   folder name verbatim (`NATIVE_ENRICHMENT_CONTRACT.md`), while
+   `short_id` is a shortened stem (e.g. `01_Foley_1986` for KB folder `[1986] Foley - …`). Confusing
+   the two mis-keyed 114 documents on 2026-08-27. Record **both** keys in every manifest and every
+   exception row.
+3. Run `/sraffa-ocr --augment --batch <the project's Knowledge_Base dir>` (Mode 4). **Never
+   `--chunks`** — its >500-char skip would skip exactly the pages that *have* agent text, i.e. nearly
+   the whole corpus, satisfying the mandate on paper while running nothing.
+4. The pass is splittable: the PyMuPDF text-layer half needs no GPU; only pages with no usable text
+   layer need the EasyOCR half. Running the text-layer half while the GPU is committed elsewhere is
+   expected, and leaves a bounded named queue — not a skipped document (see `GPU_DEFERRED`).
+5. Re-run the completion test below until it passes.
+
+### Completion test — what must exist on disk for this phase to be DONE
+
+For **every** document in the scope, exactly one of the following must hold on disk:
+
+**(a) The sibling exists** — all three, under the project's `Knowledge_Base/_OCR_Only/<short_id>/`.
+(A project's KB root is `<Project>/Knowledge_Base/` in some trees and
+`<Project>/Technical/Knowledge_Base/` in others — both are real; `_OCR_Only/` sits directly under
+whichever root that project uses.)
+- `FULL_TEXT.md`, non-empty
+- `textlayer_manifest.json` **or** `page_manifest.json`
+- one manifest entry per source page, each naming the engine that produced it — no page absent, no
+  page silently dropped
+
+**(b) The document has a bounded exception row** in the run's named artifact,
+`Knowledge_Base/_OCR_Only/STAGE5_EXCEPTIONS.csv`, columns
+`short_id,doc_id,source_md5,reason,detail,recorded_by,recorded_date` — one row per document, `reason`
+drawn from the closed list below. **A reason asserted in prose, in a wrap-up report, in a commit
+message or in a chat summary does not count.** No CSV means no exceptions.
+
+The gate is a countable identity:
+
+```
+documents_in_scope == documents_with_sibling + exception_rows_for_this_scope
+```
+
+with every exception row resolving to a real document in scope and **no document in both halves**.
+Anything else means Phase 5 is NOT done. **Report all three numbers explicitly** — "Stage 5 complete"
+without them is precisely the claim that passed while 138 documents had nothing.
+
+### The closed exception list — exactly three reasons
+
+`sphdarp-scrounger.md` bounds non-extraction to three named outcomes; Stage 5 is bounded
+the same way. **This list is closed: a reason not on it is not acceptable, however carefully
+recorded.**
+
+| `reason` | The bar | Required `detail` |
+|---|---|---|
+| `DUPLICATE` | The identical source (same `source_md5`) already carries a complete sibling under another `short_id`. Confirmed by hash — never by "looks like the same book" (scrounger §1). | the canonical `short_id` holding the sibling |
+| `QUARANTINED` | The source PDF is physically unreadable: 0 bytes, or no tool can open it (scrounger §3). Poor scan quality, Gothic type, size, and "it's born-digital anyway" are **NOT** this. | what was tried, and how each attempt failed |
+| `GPU_DEFERRED` | The text-layer half completed; named pages still need the EasyOCR half and the GPU is committed. **NON-TERMINAL — a queue entry, not a disposition.** | the specific pages + the queue file (`_OCR_Only/_GPU_OCR_QUEUE.md`) |
+
+**`GPU_DEFERRED` does not close the gate.** A scope holding any open `GPU_DEFERRED` row is **Stage 5
+INCOMPLETE** and must be reported as such; it closes only when the GPU half runs and the row is
+replaced by a sibling. This is what stops 138 deferrals from passing as 138 recorded reasons.
+
+**There is no `CF_EXHAUSTED` here.** Sraffa 4.0 is a local OCR tool, not a model behind a content
+filter — the scrounger's CF rung has no analogue in Stage 5.
+
+**Explicitly NOT acceptable reasons**, each an excuse that produced or would reproduce the incident:
+the document is born-digital / already has a text layer; its agent extraction scored 27/27; it was
+extracted in `analytical_digest` mode; the document is large; the corpus is large; OCR "adds nothing
+here"; "the L3 rescue already covered it".
+
+### What Phase 5 must never do
+
+- **Never write into a document's own KB directory.** The sibling lives in `_OCR_Only/` and nowhere
+  else; that separation is what makes this augmentation instead of substitution.
+- **Never let D2 stand in for a missing or failed D1.** A document whose agent extraction failed is
+  not repaired by running Stage 5 on it — it goes back through Phases 1–2. The
+  **ANTI-SILENT-DEGRADATION RULE** (`hdarp-processing.md`) is untouched by this phase
+  and forbids exactly that substitution.
+- **Never validate `_OCR_Only/` output as SPHDARP output** or score it on the 27-point rubric.
+
+---
+
 ## Canonical Tools
 
 | Tool | Path |
@@ -1118,17 +1275,18 @@ If you need to stop for any reason not listed in Stopping Conditions, print a cl
 
 ---
 
-**Command Version**: 6.1 CF Progressive Decomposition + Batch Continuation + Sonnet Mandatory + Opus Validator + Mandatory Catalog Sync
+**Command Version**: 6.4 Hybrid Coherence + Native RDB Enrichment + CF Progressive Decomposition + Batch Continuation + Sonnet Mandatory + Opus Validator + Mandatory Catalog Sync
 **Status**: PRODUCTION READY
 **Created**: 2025-12-22
-**Updated**: 2026-04-28
-**HDARP Protocol**: v6.3 (CF Progressive Decomposition, Batch Continuation, Sonnet Mandatory, Opus Validator)
+**Updated**: 2026-08-27
+**HDARP Protocol**: v6.4 (Hybrid Coherence: Phase 5 verbatim OCR sibling; Native RDB Enrichment, CF Progressive Decomposition, Batch Continuation, Sonnet Mandatory, Opus Validator)
 **New in v6.0**: Orchestrator-driven CF recovery via bisect_chunk() + single-page scholarly framing + OCR-only-last-resort. Replaces v5.3 subagent-driven 3-strategy approach. See HDARP_FAILURE_TAXONOMY.md v2.0.
+**⚠ Correction of record (2026-08-27, v6.4)** — the dated v6.0 row above stands as written and is not rewritten. Its "OCR-only-last-resort" describes the scrounger ladder's **L3 per-page CF rescue** only, and remains true of that. It never governed **Hybrid Stage 5 (D2)**, which is mandatory over **every** document and runs whether or not anything failed — see **Phase 5**.
 **v5.2**: Task hygiene (Phase 3.5), 25-task budget
 **v5.1**: Automatic batch continuation (Phase 4), `--single` flag, inter-batch summaries, BLOCKED detection
 **v5.0**: Sonnet Mandatory model policy, Opus validator, 10-chunk batch sizing
 **v4.5**: Mandatory catalog synchronization
-**Key**: S=Smart batching, P=Parallel (all commands), H=Hybrid (includes OCR)
+**Key**: S=Smart batching, P=Parallel (all commands), H=Hybrid (agent-read D1 **plus** the mandatory Stage 5 verbatim OCR sibling D2 — Phase 5)
 
 <!-- HDARP Framework v6.2 (2026-05-29): unified per VERSION_REGISTRY.md and HDARP_v6.2_UPGRADE_PLAN.md. Prior version stamps retained in history above. -->
-<!-- HDARP Framework v6.3 (2026-06-13): native RDB enrichment capture added. -->
+<!-- HDARP Framework v6.3 (2026-06-13): native RDB enrichment capture added; Sraffa engine remains 4.0. -->

@@ -1,18 +1,18 @@
 ---
-description: "Smart Parallel DARP v6.2: Task Hygiene + Batch Continuation + Sonnet Mandatory + Opus Validator + Mandatory Catalog Sync + Document-aware batching (NO OCR)"
+description: "Smart Parallel DARP v6.4: Native RDB Enrichment + Task Hygiene + Batch Continuation + Sonnet Mandatory + Opus Validator + Mandatory Catalog Sync + Document-aware batching (NO OCR)"
 allowed-tools: Bash, Read, Write, Glob, Grep, Task
 argument-hint: "[number]"
 ---
 
-**HDARP Framework v6.3** — see `VERSION_REGISTRY.md`
+**HDARP Framework v6.4** — see `VERSION_REGISTRY.md`
 
-> **Native RDB metadata capture (v6.3):** SPDARP extracts tables (no OCR) — its tables are the whole point, so native capture is high-value. Processors emit one `RDB_METADATA*.jsonl` line per table CSV per `hdarp-processing.md` ("Native RDB Enrichment Capture") + spec `NATIVE_ENRICHMENT_CONTRACT.md`. Same chunk-range/whole-doc + WARN-only validator rules as `sphdarp.md`.
+> **Native RDB metadata capture (v6.4):** SPDARP extracts tables (no OCR) — its tables are the whole point, so native capture is high-value. Processors emit one `RDB_METADATA*.jsonl` line per table CSV per `hdarp-processing.md` ("Native RDB Enrichment Capture") + spec `NATIVE_ENRICHMENT_CONTRACT.md`. Same chunk-range/whole-doc + WARN-only validator rules as `sphdarp.md`.
 
-# Smart Parallel Direct Agent Reading Protocol (SPDARP) v6.2
+# Smart Parallel Direct Agent Reading Protocol (SPDARP) v6.4
 
 **Command**: /spdarp [N]
 **Full Name**: Smart Parallel Direct Agent Reading Protocol
-**Version**: 6.2
+**Version**: 6.3
 **Created**: 2026-01-01
 **Updated**: 2026-04-14
 
@@ -20,7 +20,7 @@ argument-hint: "[number]"
 
 If you encounter a content filter error, timeout, or any API error: RECORD the affected chunks in Failures and CONTINUE. **DO NOT** generate substitute content, paraphrase from memory, or write block quotes / attributions you haven't verified verbatim from the source PDF. Mark uncertain passages `[approximate]` — gap markers are always preferable to fabrications. See `HDARP_CONTENT_FILTER_PATTERNS.md`.
 
-**DO NOT silently substitute extraction methods.** If agent extraction fails, STOP and report. Do not switch to PyMuPDF, bulk scripts, or any non-DARP method without explicit user approval. See the 2026-05-06 Wave_07 silent degradation incident in sphdarp.md.
+**DO NOT silently substitute extraction methods.** If agent extraction fails, STOP and report. Do not switch to PyMuPDF, bulk scripts, or any non-DARP method without explicit user approval. See the 2026-05-06 silent degradation incident in sphdarp.md.
 
 ## Scrounger Standard
 
@@ -42,7 +42,7 @@ See `sphdarp-scrounger.md` for the full acceptable-outcomes taxonomy and retry b
 
 All DARP commands now integrate with BATCH_STATE.json:
 
-**Location**: {Project}/BATCH_STATE.json
+**Location**: {Project}/Technical/HDARP_Processing/BATCH_STATE.json
 
 **Key Changes**:
 - Command reads batch_to_process from state
@@ -339,7 +339,9 @@ When spawning processor agents, use this structure:
 **Agent Assignment**:
 - YOUR DOCUMENT: {document_name}
 - YOUR CHUNKS: {chunk_list} ({chunk_count} chunks total)
-- OUTPUT DIRECTORY: {document_name}
+- OUTPUT DIRECTORY: Knowledge_Base/{document_name}/
+
+> **DARP-only — no body OCR, and the Hybrid mandate does not apply.** HDARP's mandatory Stage-5 verbatim OCR sibling (`/sraffa-ocr --augment`, see `CLAUDE.md` → HDARP lifecycle) belongs to the **H** commands. ``/spdarp`` extracts no body text, so it produces no sibling and is never gated on one. Use ``/sphdarp`` when body text is needed.
 
 **SPDARP Extraction (3 Content Types - NO OCR)**:
 - A. Tables -> CSV (98%+ accuracy, DARP vision)
@@ -355,7 +357,7 @@ When spawning processor agents, use this structure:
 
 **Output Structure**:
 ```
-{document_name}
+Knowledge_Base/{document_name}/
 ├── CSV_Tables/
 │   ├── table_001.csv
 │   └── table_002.csv
@@ -377,7 +379,7 @@ When spawning processor agents, use this structure:
 2. Quality Assessment (score each document on 22-point scale)
 3. Update tracking files (catalog, remaining_work.json)
 4. **Post-Validation Cleanup (MANDATORY)**: After marking batch as VERIFIED:
-   - Delete chunk PDFs: `chunk_*.pdf`
+   - Delete chunk PDFs: `Technical/HDARP_Processing/{doc_id}/chunks/chunk_*.pdf`
    - Verify Knowledge_Base content is intact before deleting
    - Update HDARP_MASTER_CATALOG.csv status to ARCHIVED
    - Log freed space: "Cleaned batch {batch_id}: freed {X} MB"
@@ -400,6 +402,7 @@ When spawning processor agents, use this structure:
 | Equations | Yes (LaTeX) | Yes (LaTeX) |
 | Figures | Yes (Markdown) | Yes (Markdown) |
 | Body Text OCR | Yes (Sraffa 4.0) | **NO** |
+| Hybrid Stage-5 verbatim sibling | **Mandatory, every document** | **N/A** — no body text, so no sibling |
 | Quality Points | 27 max | 22 max |
 | Minimum Score | 22/27 (80%) | 18/22 (80%) |
 | Use Case | Full extraction | Tables/equations/figures only |
@@ -695,10 +698,10 @@ Skip Phase 4 entirely. Command ends after Phase 3.
 
 ---
 
-**Command Version**: 6.1 Batch Continuation + Sonnet Mandatory + Opus Validator + Mandatory Catalog Sync
+**Command Version**: 6.3 Native RDB Enrichment + Batch Continuation + Sonnet Mandatory + Opus Validator + Mandatory Catalog Sync
 **Status**: PRODUCTION READY
 **Created**: 2026-01-01
-**Updated**: 2026-04-06
+**Updated**: 2026-06-13
 **Protocol**: DARP-only (3 content types, no OCR)
 **Quality Scoring**: 22 points (18/22 minimum)
 **New in v5.1**: Automatic batch continuation (Phase 4), `--single` flag, inter-batch summaries, BLOCKED detection

@@ -1,36 +1,54 @@
 ---
-description: "HDARP Wrap-Up v1.0: Post-processing validation, remediation, documentation, and wave/batch closeout"
+description: "HDARP Wrap-Up v6.4 (command lineage v1.0): Post-processing validation, remediation, documentation, and wave/batch closeout"
 allowed-tools: Bash, Read, Write, Edit, Glob, Grep, Agent
 argument-hint: "[wave|batch|campaign] [target]"
 ---
 
-**HDARP Framework v6.3** — see `VERSION_REGISTRY.md`
+**HDARP Framework v6.4** — see `VERSION_REGISTRY.md`
 
 # HDARP Wrap-Up Command v1.0
 
 **Command**: `/hdarp-wrapup [scope] [target]`
 **Purpose**: Validate, remediate, document, and close out processed HDARP batches
-**Version**: 6.2
+**Version**: 6.4
 **Created**: 2026-05-06
 
 ## HDARP Lifecycle Position
 
-This command is step **4** (WRAP-UP) in the HDARP lifecycle:
-1. `/hdarp-campaign` — campaign setup
-2. `/preparehdarp` — chunk and prepare PDFs
-3. `/sphdarp` (or `/phdarp`, `/spdarp`, `/pdarp`) — extract all 4 content types via agents
-4. **`/hdarp-wrapup`** — validate, remediate, document, close out
-5. `/hdarp-integrate-pipeline` — catalog, classify, crossref, Robert sync
+This command is step **4** (WRAP-UP) in the HDARP lifecycle. Canonical order and membership — the
+same string appears in `CLAUDE.md`, `instructions.md` and `readystart.md`:
 
-**Run this AFTER processing is complete and BEFORE integration.**
+1. `/preparehdarp` — chunk and prepare PDFs
+2. `/sphdarp` (or `/phdarp`, `/spdarp`, `/pdarp`) — extract all 4 content types via agents
+3. `/enrichhdarp` — audit + remediate extraction gaps
+4. **`/hdarp-wrapup`** — validate, remediate, document, close out
+5. `/sraffa-ocr --augment` — **Hybrid Stage 5: MANDATORY, every document, no exceptions**
+6. `/hdarp-cleanup` — remove chunk artifacts with catalog verification
+7. `/kb-integrate-pipeline` — catalog, classify, crossref, Robert sync (`/hdarp-integrate-pipeline` alias)
+
+**Run this AFTER processing is complete and BEFORE Stage 5 and integration.**
+
+> **Stage 5 is not conditional.** It was written "(if needed)" until 2026-08-27, which is why it ran
+> on 5 of 143 documents in a recent wave while 353 of 384 documents had no verbatim body text
+> anywhere. Every document gets a verbatim OCR sibling in `Knowledge_Base/_OCR_Only/<short_id>/`
+> beside its agent-read body text — augmentation, never substitution. The two-layer rule is canonical
+> in `hdarp-processing.md` ("Hybrid body text = two layers"); the mode is
+> `sraffa-ocr.md` Mode 4.
+>
+> **Owner (one owner — this statement appears identically in `sphdarp.md` Phase 5 and
+> `sraffa-ocr.md`):** the **`/sphdarp` orchestrator** owns Hybrid Stage 5 and runs it as its
+> **Phase 5**, once per drain scope, by invoking `/sraffa-ocr --augment` after `/hdarp-wrapup` has
+> gated the scope. **This command GATES Stage 5 and never RUNS it**; `/sraffa-ocr` never schedules
+> itself and is never invoked inline mid-round. "Once per drain scope" is defined precisely in
+> `sphdarp.md` Phase 5 — do not re-derive it here.
 
 ## Usage
 
 ```
-/hdarp-wrapup wave Wave_07              # Wrap up entire wave
+/hdarp-wrapup wave Wave_02              # Wrap up entire wave
 /hdarp-wrapup batch BATCH_1205          # Wrap up single batch
 /hdarp-wrapup campaign Second_HDARP     # Wrap up entire campaign
-/hdarp-wrapup --audit-only wave Wave_07 # Phase 1 only (read-only)
+/hdarp-wrapup --audit-only wave Wave_02 # Phase 1 only (read-only)
 ```
 
 ## Scope
@@ -90,7 +108,7 @@ If `--audit-only` was passed, STOP here and display results.
 **Tier B batches**:
 - Run `/enrichhdarp audit` to identify specific gaps (Type A-D failures)
 - Run `/enrichhdarp remediate` on actionable failures
-- Run `/sraffa-ocr --chunks` on pages flagged for OCR
+- Run `/sraffa-ocr --chunks` on pages flagged for OCR (L3 CF rescue only — **not** Stage 5)
 - Re-classify after remediation (B batches may promote to A)
 
 **Tier C batches**:
@@ -144,14 +162,17 @@ For verified batches that have chunk-range files but no consolidated FULL_TEXT.m
 2. Preserve chunk boundary markers (`<!-- chunk_NNN -->`) between sections
 3. Write consolidated `FULL_TEXT.md`
 4. Verify assembled size is reasonable (within 5% of sum of parts)
-5. **Native RDB metadata consolidation (v6.3)**: dedup the `RDB_METADATA_chunks_*.jsonl` shards by `source_relpath` (last writer wins; identical lines collapse) into a single `RDB_METADATA.jsonl` (or leave shards in place — `robert-db-harvest` reads both). Do NOT fabricate lines for tables no shard covered.
+5. **Native RDB metadata consolidation (v6.3; corrected v6.4)**: consolidate the `RDB_METADATA_chunks_*.jsonl` shards into a single `RDB_METADATA.jsonl`.
+   🔴 **If you consolidate, you MUST retire the shards** — move them out of the `Knowledge_Base/` (to `Technical/HDARP_Processing/_repair_backups/`), never delete them. `robert-db-harvest` globs `RDB_METADATA*.jsonl` and reads the consolidated file **and** the shards, so leaving both in place **double-counts every absorbed table**. The earlier wording here — *"or leave shards in place — robert-db-harvest reads both"* — was wrong and produced the defect: measured 2026-08-27, 31 documents carried 56 fully-absorbed shards worth 241 duplicate metadata lines.
+   **Retire a shard ONLY when its lines are a strict subset of the consolidated file.** If a shard holds even one line the consolidated file lacks, retiring it destroys metadata — leave that document alone and report it (20 documents were in this state).
+   **Do NOT resolve conflicting lines by "last writer wins."** Two lines for the same `source_relpath` with different `title_raw`/`page`/`transcription_status` are two readings that disagree; one may be a correction of the other. Picking the last silently discards corrections at scale. Record them for a human (see `SIDECAR_CONFLICTS.md` for the pattern) and leave both in place. Do NOT fabricate lines for tables no shard covered.
 
 ### Phase 5: Chunk PDF Cleanup
 
 For every VERIFIED batch:
 
 1. Verify KB content is intact: FULL_TEXT.md exists, structured dirs exist
-2. Delete chunk PDFs from `chunks`
+2. Delete chunk PDFs from `Technical/HDARP_Processing/{doc_id}/chunks/`
 3. Delete manifest.json
 4. Remove empty directories
 5. Log space freed per batch and cumulative total
@@ -180,7 +201,7 @@ For verified batches missing METADATA.json in their KB directory:
      "wave": "Wave_NN"
    }
    ```
-2. Write to `METADATA.json`
+2. Write to `Knowledge_Base/{doc_id}/METADATA.json`
 
 ### Phase 7: Catalog Sync
 
@@ -195,7 +216,7 @@ If row exists, update. If not, append.
 
 ### Phase 8: CURRENT_STATUS.md Update
 
-Update `CURRENT_STATUS.md`:
+Update `Handoffs/CURRENT_STATUS.md`:
 - Wave progress matrix row with accurate counts
 - Batch state totals (recalculate from BATCH_STATE.json)
 - Latest activity section with wrapup summary
@@ -204,7 +225,7 @@ Update `CURRENT_STATUS.md`:
 
 ### Phase 9: Wave Handoff Report
 
-Generate `WAVE_NN_WRAPUP_REPORT.md`:
+Generate `Technical/HDARP_Processing/WAVE_NN_WRAPUP_REPORT.md`:
 
 ```markdown
 # Wave NN Wrap-Up Report
@@ -238,8 +259,16 @@ Generate `WAVE_NN_WRAPUP_REPORT.md`:
 - Chunk PDFs freed: X GB
 - KB output retained: Y MB
 
-## OCR Backlog
-- Pages deferred to /sraffa-ocr: N
+## OCR Backlog (L3 CF rescue)
+- Pages deferred to /sraffa-ocr --chunks: N
+
+## Hybrid Stage 5 readiness (MANDATORY — gate)
+- Documents in scope: N
+- Documents with a verbatim sibling at `Knowledge_Base/_OCR_Only/<short_id>/`: N
+- Bounded exception rows in `_OCR_Only/STAGE5_EXCEPTIONS.csv` (DUPLICATE / QUARANTINED / GPU_DEFERRED only): N
+- Of those, open `GPU_DEFERRED`: N — **non-terminal; while >0 the scope is Stage 5 INCOMPLETE**
+- **Identity check: documents_in_scope == siblings + exception_rows — must hold exactly, no document in both halves**
+- **Documents in NEITHER half: N — any non-zero value FAILs the wrap-up gate below**
 
 ## Reprocessing Queue
 - Batches needing /sphdarp re-run: [list with reasons]
@@ -253,6 +282,19 @@ Generate `WAVE_NN_WRAPUP_REPORT.md`:
 
 Wrap-up is complete when:
 - All batches in scope are in a terminal state (VERIFIED, DEPRECATED, SKIPPED) OR documented as needing reprocessing
+- **Hybrid Stage 5 gate — bounded, per-document, artifact-backed.** Every document in scope must
+  either **(a)** have a verbatim sibling at `Knowledge_Base/_OCR_Only/<short_id>/` (non-empty
+  `FULL_TEXT.md` plus a manifest covering every source page), or **(b)** have its own row in the
+  named artifact `Knowledge_Base/_OCR_Only/STAGE5_EXCEPTIONS.csv` whose `reason` is one of exactly
+  three — `DUPLICATE`, `QUARANTINED`, `GPU_DEFERRED` — each with its bar and required `detail`
+  defined in `sphdarp.md` Phase 5, "The closed exception list". **That list is closed and the
+  artifact is required: a reason given in prose, in this report, or in a commit message does not
+  count, and no reason outside the three is acceptable however carefully recorded.** `GPU_DEFERRED`
+  is **non-terminal** — a scope with any open `GPU_DEFERRED` row is Stage 5 INCOMPLETE, not
+  gated-through. Report the identity `documents_in_scope == siblings + exception_rows` with all
+  three numbers; a document in neither half, or in both, FAILs. A missing sibling is never grounds to
+  accept a text dump in the document's KB directory instead — that is the substitution the
+  anti-silent-degradation rule forbids
 - HDARP_MASTER_CATALOG.csv is synced
 - CURRENT_STATUS.md is updated
 - Wrapup report is written
@@ -269,19 +311,20 @@ Wrap-up is complete when:
 | Command | Relationship |
 |---------|-------------|
 | `/enrichhdarp` | Called by Phase 2 for Type A-D remediation |
-| `/sraffa-ocr` | Called by Phase 2 for OCR gap pages |
+| `/sraffa-ocr --chunks` | Called by Phase 2 for L3 CF rescue on OCR gap pages |
+| `/sraffa-ocr --augment` | **Step 5 — Hybrid Stage 5, mandatory over every document. Owned and run by `/sphdarp` Phase 5; this command GATES it and never RUNS it (see Stopping Conditions)** |
 | `/hdarp-cleanup` | Phase 5 overlaps; wrapup handles cleanup inline |
-| `/hdarp-integrate-pipeline` | Next step after wrapup (step 5 in lifecycle) |
+| `/kb-integrate-pipeline` | Step 7 (`/hdarp-integrate-pipeline` is a backward-compatible alias) |
 | `robert-db-build` | Downstream of integration: builds the research-grade table database (Robert Database Framework v1.0 — `ROBERT_DATABASE_FRAMEWORK_OVERVIEW.md`) |
 | `/sphdarp` | Prior step (step 3); wrapup validates its output |
 
 ---
 
-**Command Version**: 6.1
+**Command Version**: 6.4
 **Status**: PRODUCTION READY
 **Created**: 2026-05-06
-**HDARP Protocol**: v6.3
+**HDARP Protocol**: v6.4
 **Key**: Post-processing validation + remediation + documentation + closeout
 
 <!-- HDARP Framework v6.2 (2026-05-29): unified per VERSION_REGISTRY.md and HDARP_v6.2_UPGRADE_PLAN.md. Prior version stamps retained in history above. -->
-<!-- HDARP Framework v6.3 (2026-06-13): native RDB enrichment capture added. -->
+<!-- HDARP Framework v6.3 (2026-06-13): added WARN-only native RDB metadata validation and sidecar consolidation. -->

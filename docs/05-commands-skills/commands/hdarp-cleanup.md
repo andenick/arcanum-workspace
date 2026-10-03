@@ -1,16 +1,16 @@
 ---
-description: "HDARP Cleanup v4.5: Remove processed chunk artifacts with catalog verification and status update"
+description: "HDARP Cleanup v6.3: Remove processed chunk artifacts with catalog verification and status update"
 allowed-tools: Bash, Read, Write, Glob, Grep
 argument-hint: "[document_name]"
 ---
 
 **HDARP Framework v6.3** — see `VERSION_REGISTRY.md`
 
-# HDARP Cleanup Command v6.2
+# HDARP Cleanup Command v6.3
 
 **Command**: `/hdarp-cleanup [document_name]`
 **Purpose**: Manual cleanup of processed/validated HDARP chunk artifacts with catalog sync
-**Version**: 6.2
+**Version**: 6.3
 **Created**: 2025-12-23
 **Updated**: 2026-02-09
 
@@ -27,7 +27,7 @@ argument-hint: "[document_name]"
 
 **CRITICAL**: Only clean batches with status VERIFIED in BATCH_STATE.json.
 
-**Location**: {Project}/BATCH_STATE.json
+**Location**: {Project}/Technical/HDARP_Processing/BATCH_STATE.json
 
 **Before Cleanup**:
 1. Read BATCH_STATE.json
@@ -53,7 +53,7 @@ See BATCH_STATE_PROTOCOL.md for full details.
 
 1. **Read HDARP_MASTER_CATALOG.csv**
    ```python
-   catalog_path = f"{project}/HDARP_MASTER_CATALOG.csv"
+   catalog_path = f"{project}/Technical/HDARP_MASTER_CATALOG.csv"
    catalog = pd.read_csv(catalog_path)
    ```
 
@@ -78,21 +78,21 @@ See BATCH_STATE_PROTOCOL.md for full details.
 
 ```bash
 /hdarp-cleanup                  # Cleanup all validated chunks in project
-/hdarp-cleanup Volcker          # Cleanup specific document only
+/hdarp-cleanup {doc}             # Cleanup specific document only
 /hdarp-cleanup --dry-run        # Preview what would be deleted (no actual deletion)
 ```
 
 ## What Gets Cleaned Up
 
 **DELETED** (after verification):
-- `*.pdf` - Chunk PDFs
-- `manifest.json` - Processing manifest
+- `Technical/HDARP_Processing/{doc}/chunks/*.pdf` - Chunk PDFs
+- `Technical/HDARP_Processing/{doc}/manifest.json` - Processing manifest
 
 **PRESERVED** (never deleted):
-- `{original}.pdf` - Original source PDFs
-- `{doc}` - All extracted content
-- `chunk_*_PROCESSING_SUMMARY.md` - Processing summaries
-- `RDB_METADATA.jsonl` and `RDB_METADATA_chunks_*.jsonl` — **native RDB enrichment sidecars (v6.3). CRITICAL: never delete.** Once the chunk PDFs are gone this honest read-time metadata cannot be re-recovered; the sidecar is the only surviving record.
+- `Inputs/PDFs/{original}.pdf` - Original source PDFs
+- `Knowledge_Base/{doc}/` - All extracted content
+- `Knowledge_Base/{doc}/chunk_*_PROCESSING_SUMMARY.md` - Processing summaries
+- `Knowledge_Base/{doc}/RDB_METADATA.jsonl` and `RDB_METADATA_chunks_*.jsonl` — **native RDB enrichment sidecars (v6.3). CRITICAL: never delete.** Once the chunk PDFs are gone this honest read-time metadata cannot be re-recovered; the sidecar is the only surviving record.
 
 **Pre-cleanup WARN (v6.3):** if `config.kb.native_enrichment="require"` was in effect (or the doc was extracted under v6.3) and no `RDB_METADATA*.jsonl` sidecar is present, emit a WARNING before deleting chunk PDFs — the metadata can still be backfilled by `enrichhdarp` Type E *only while the chunk PDFs survive*.
 
@@ -104,7 +104,7 @@ See BATCH_STATE_PROTOCOL.md for full details.
 
 ```bash
 # Find all documents with HDARP processing
-ls HDARP_Processing
+ls Technical/HDARP_Processing/
 ```
 
 ### Step 2: Verify Validation Status
@@ -113,7 +113,7 @@ For each document, check ALL chunks passed validation:
 
 1. **Check processing summaries exist**:
    ```bash
-   ls chunk_*_PROCESSING_SUMMARY.md
+   ls Knowledge_Base/{doc}/chunk_*_PROCESSING_SUMMARY.md
    ```
 
 2. **Verify quality scores** in each summary:
@@ -121,7 +121,7 @@ For each document, check ALL chunks passed validation:
    - v3.3: Score >= 20/25
 
 3. **Confirm content extraction**:
-   - `chunk_*_text.md` exists for each chunk
+   - `Knowledge_Base/{doc}/Text/chunk_*_text.md` exists for each chunk
    - Tables, equations, figures extracted as applicable
 
 ### Step 3: Safety Check Report
@@ -149,12 +149,12 @@ Only cleanup ELIGIBLE chunks:
 
 ```bash
 # For each eligible chunk
-rm chunk_{N}*.pdf
+rm Technical/HDARP_Processing/{doc}/chunks/chunk_{N}*.pdf
 
 # After ALL chunks cleaned for a document
-rm manifest.json
-rmdir chunks
-rmdir {doc}
+rm Technical/HDARP_Processing/{doc}/manifest.json
+rmdir Technical/HDARP_Processing/{doc}/chunks/
+rmdir Technical/HDARP_Processing/{doc}/
 ```
 
 ### Step 5: Generate Cleanup Report
@@ -171,8 +171,8 @@ rmdir {doc}
 - Removed: HDARP_Processing/{doc}/ directory
 
 ### Preserved
-- Original: {document}.pdf
-- Knowledge Base: {doc} (all content intact)
+- Original: Inputs/PDFs/{document}.pdf
+- Knowledge Base: Knowledge_Base/{doc}/ (all content intact)
 
 ### Status: CLEANUP COMPLETE
 ```
@@ -200,7 +200,7 @@ catalog.to_csv(catalog_path, index=False)
 1. **Any chunk failed validation** (score below minimum)
 2. **Missing text files** in Knowledge_Base
 3. **Missing processing summaries**
-4. **Original PDF not in **
+4. **Original PDF not in Inputs/**
 
 ### Version Detection
 
@@ -227,13 +227,13 @@ Output:
 DRY RUN - No files will be deleted
 
 Would cleanup:
-- chunk_01_pages_1-10.pdf (0.8 MB)
-- chunk_02_pages_11-20.pdf (0.7 MB)
-- manifest.json (2 KB)
+- Technical/HDARP_Processing/{doc}/chunks/chunk_01_pages_1-10.pdf (0.8 MB)
+- Technical/HDARP_Processing/{doc}/chunks/chunk_02_pages_11-20.pdf (0.7 MB)
+- Technical/HDARP_Processing/{doc}/manifest.json (2 KB)
 
 Total: 3 files, 1.5 MB
 
-To execute: /hdarp-cleanup Volcker
+To execute: /hdarp-cleanup {doc}
 ```
 
 ---
@@ -257,12 +257,12 @@ To execute: /hdarp-cleanup Volcker
 
 ---
 
-**Command Version**: 6.1 Catalog Verification + Status Update
+**Command Version**: 6.3 Native RDB Sidecar Preservation + Catalog Verification + Status Update
 **Status**: PRODUCTION READY
 **Created**: 2025-12-23
-**Updated**: 2026-02-09
+**Updated**: 2026-06-13
 **HDARP Protocol**: v6.3
 **New in v4.5**: Pre-cleanup catalog verification, post-cleanup ARCHIVED status update
 
 <!-- HDARP Framework v6.2 (2026-05-29): unified per VERSION_REGISTRY.md and HDARP_v6.2_UPGRADE_PLAN.md. Prior version stamps retained in history above. -->
-<!-- HDARP Framework v6.3 (2026-06-13): native RDB enrichment capture added. -->
+<!-- HDARP Framework v6.3 (2026-06-13): RDB_METADATA*.jsonl sidecars added to the mandatory preserve list. -->
