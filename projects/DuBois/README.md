@@ -1,84 +1,52 @@
-# DuBois — Housing, Rents & Eviction Economics
+# DuBois — race.heterodata.org
 
-**Named after**: W.E.B. Du Bois (1868–1963), sociologist, historian, and pioneering data visualization innovator whose *The Philadelphia Negro* (1899) was among the first rigorous empirical studies of urban housing, labor, and racial inequality in America
-**Created**: 2026-05-10
-**Status**: Scaffolding
-**Architecture**: AnuData v1.0 (planned)
-**Domain**: Housing prices, rents, affordability, eviction, homelessness, residential segregation
+**Race, stratification & economic disparities in the United States**, presented as a research website with a full data-replication package. Named for W.E.B. Du Bois, who pioneered the empirical study of race and economic stratification.
+
+**Status: live site with all 15 routes serving real, source-traced data** (verified against the repository README, 2026-10-02). Repo: `andenick/race-web`.
 
 ---
 
-## Purpose
+## What it covers
 
-DuBois extends Arcanum's existing HMDA mortgage lending data (59.7M records) into the broader housing economy: prices, rents, affordability, evictions, and residential segregation. HMDA captures who gets loans — DuBois captures what happens to housing markets, tenants, and communities.
+Six measurable dimensions of racial economic disparity — **wealth, income, employment, poverty, housing, and criminal justice** — plus education, business ownership, geography, and long-run historical context, reconstructed from authoritative public sources:
 
-Du Bois's 1900 Paris Exposition data portraits — visualizing Black American economic life through innovative charts — pioneered the kind of data-driven social analysis this project continues.
+- **Wealth** — Federal Reserve Survey of Consumer Finances (1989–2022, 12 waves); the Black–White median wealth gap is the north-star series
+- **Income / Poverty / Housing / Education** — US Census ACS (B19013, B17001, B25003, C15002)
+- **Employment** — BLS Current Population Survey via FRED (Black/White unemployment ratio, 1972–2025)
+- **Criminal justice** — BJS *Prisoners* 2020 (imprisonment rates by race)
+- **Business** — Census Annual Business Survey (employer firms by owner race)
+- **Historical** — SlaveVoyages trans-Atlantic slave-trade database (TAST 2019), MeasuringWorth / HSUS demographics
 
-## Research Questions
+Nothing on the site is fabricated or interpolated; where a source publishes imputed estimates, that is stated and the figure carried through as published.
 
-1. How do housing cost burdens vary by income, race, and geography?
-2. What is the relationship between eviction rates and labor market conditions?
-3. How do housing price cycles relate to financial instability (Minsky)?
-4. What are the spatial patterns of residential segregation and how have they evolved?
-5. How does housing wealth concentration compare to financial wealth concentration?
+## The numbers behind the site
 
-## Data Sources
+- **15 routes**, every one backed by real data — no "coming soon" placeholders
+- **20 data CSVs** in `app/data/` (22 published files total, including the data dictionary and citation record), each listed with download URL and SHA-256 in [`DATA_MANIFEST.md`](DATA_MANIFEST.md)
+- **Replication package** ([`anu/`](anu/)): 27 series, loaders → processors → validators, rebuilding every published CSV from the original public sources (`make all`)
 
-### Primary (API / Bulk Download)
+Known gaps are documented on the site's methodology page: no standard ACS 1-year estimates exist for 2020 (a one-year hole in five series families), the 2025 unemployment point is a six-month average, and the data dictionary covers 12 of the 20 data CSVs.
 
-| Source | Coverage | Records (est.) | Access Method |
-|--------|----------|----------------|---------------|
-| **Zillow Research Data** | Home values (ZHVI), rents (ZORI), inventory — zip/metro/county | 2-5M | Zillow Econ Data API / CSV |
-| **Census ACS** | Housing characteristics, costs, tenure, crowding | 5-10M | Census API |
-| **American Housing Survey** | Detailed housing conditions, biennial | 500K+ | Census bulk download |
-| **FHFA House Price Index** | Repeat-sales HPI by MSA, state, zip | 1M+ | FHFA bulk download |
-| **Eviction Lab (Princeton)** | Eviction filing rates by county/city, 2000-present | 500K+ | evictionlab.org download |
-| **HUD Fair Market Rents** | FMR by county/MSA, annual | 200K+ | HUD download |
-| **HUD PIT Count** | Point-in-time homeless counts, annual | 50K+ | HUD exchange |
-| **Census Building Permits** | New residential construction by geography | 500K+ | Census API |
-| **FHFA Mortgage Performance** | Loan-level performance data | 2M+ | FHFA download |
+## Stack
 
-### Secondary (HDARP / Literature)
+- **FastAPI** + Jinja2 templates + **Plotly.js** (vendored, no CDN) — Python 3.12, gunicorn + uvicorn workers
+- Shared Heterodata site chrome (header/footer, ecosystem switcher, theme toggle), all vendored
+- First-party telemetry writes one row per request to local SQLite — no cookies, no third party, no raw IP stored
 
-- Desmond (2016) *Evicted* — ethnography of eviction
-- Rothstein (2017) *The Color of Law* — government-sponsored segregation
-- Case & Shiller housing price research
-- Mian & Sufi (2014) *House of Debt*
-
-## Cross-Project Links
-
-| Project | Connection |
-|---------|------------|
-| **HMDA** | Mortgage lending ↔ housing prices and outcomes |
-| **Volcker** | Bank exposure to housing sector |
-| **Piketty** (new) | Housing wealth in wealth distribution |
-| **Westchester2_Final** | GIS infrastructure analysis ↔ housing patterns |
-| **Davis** (new) | Housing instability ↔ criminal justice contact |
-| **Gerhard** | Public housing, Section 8, HUD spending |
-
-## Structure
-
-```
-DuBois/
-├── Inputs           # Zillow, Census, FHFA, Eviction Lab downloads
-├── Technical        # Collection scripts, AnuData pipeline
-│   ├── AnuData/      # AnuData v1.0 pipeline (planned)
-│   ├── DataService/  # shared data-checkout service integration
-│   └── Handoffs     # Session documentation
-└── Outputs          # Analysis results, housing maps, affordability reports
+```bash
+pip install -r app/requirements.txt
+cd app && python -m uvicorn main:app --reload --port 8090     # → http://localhost:8090
 ```
 
-## Data-Service Integration
+Data files are not distributed in the repository; fetch them from the live site's `/data` page per `DATA_MANIFEST.md`.
 
-Priority data for the shared data-checkout service to ingest:
-- Zillow ZHVI and ZORI time series (metro/county level)
-- FHFA HPI by MSA and state
-- Census ACS housing cost burden ratios
-- HUD Fair Market Rents
-- Eviction Lab filing rates
+## Verification
 
-## Knowledge Base Links
+Count-asserting, not status-code-asserting: each page is checked for the number of records it actually renders against its source CSV, and each chart is confirmed to paint in a real browser. Pages are also checked for real data (no placeholders), offline operation with no CDN, legible charts at every viewport width, and no literal markdown.
 
-- Connects to: Financial instability (Minsky/Campaign B), accumulation theory
-- Data visualization: Du Bois data portraits tradition
-- Recommended HDARP: Desmond (2016), Rothstein (2017) for institutional context
+**Live at [race.heterodata.org](https://race.heterodata.org).**
+
+## License
+
+- **Code**: MIT
+- **Data**: reconstructed from public-domain / open government data (CC-BY-4.0 for the harmonized dataset); original agencies remain authoritative

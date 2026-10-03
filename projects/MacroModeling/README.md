@@ -1,6 +1,10 @@
 # MacroModeling
 
-Comprehensive macroeconomic model library spanning all major traditions -- heterodox and mainstream. Implements, replicates, and compares models from Stock-Flow Consistent (SFC), DSGE, New Keynesian, Real Business Cycle, VAR, Input-Output, Kaleckian, Sraffian, and Agent-Based frameworks.
+Comprehensive macroeconomic model library spanning all major traditions — heterodox and mainstream. Implements, replicates, and compares models from Stock-Flow Consistent (SFC), DSGE, New Keynesian, Real Business Cycle, VAR, heterogeneous-agent, input-output, Kaleckian, Sraffian, overlapping-generations, and agent-based frameworks.
+
+**53 native model implementations across 11 traditions**, version 7.0.0. Repo: `andenick/macromodeling` (verified 2026-10-02).
+
+---
 
 ## Vision
 
@@ -22,98 +26,35 @@ Build the most thorough open collection of macroeconomic models, each implemente
 | **Overlapping Generations** | Diamond (1965) OLG | 1 native |
 | **Agent-Based** | Dosi K+S, SFC-ABM | 2 native |
 
-## Architecture
+## Installation
 
-```
-MacroModeling/
-  Inputs
-    Papers/              Source PDFs organized by tradition
-    Data/                Economic data (FRED, BEA, Z.1)
-  Technical
-    Knowledge_Base      Extracted equations, tables, parameters
-    Models/              Implementations organized by tradition
-      SFC/
-        godley_lavoie/   Godley-Lavoie textbook models (3 implemented)
-        levy_institute/  Levy Strategic Analysis models
-      DSGE/  NK/  VAR/  IO/  Kaleckian/  ABM/  RBC/  OG/  HetAgent/
-    shared/              Cross-model utilities
-      framework/         Base model class, SFC framework, solvers
-      data_loaders/      ALFRED, Z.1, FRED loaders
-      visualization/     Plotting and comparison tools
-      calibration/       Calibration infrastructure
-      validation/        Cross-model validation
-    AnuData/           Empirical model estimation and comparison
-    ANU_REPLICATOR/      Replication of published data series
-    series_registry.json Anu Suite single source of truth
-    MODEL_TAXONOMY.md    Classification of all model families
-    MODEL_CATALOG.md     Specific implementation targets
-  Outputs
-    Data/                Model simulation outputs
-    Reports/             Analysis reports (LaTeX -> PDF)
-    Comparisons/         Cross-tradition comparison results
-```
-
-## Quick Start
-
-### Run an existing SFC model
+Requires Python 3.11+ (developed on 3.13).
 
 ```bash
-cd godley_lavoie
-python model_sim.py
+git clone https://github.com/andenick/macromodeling.git
+cd macromodeling
+python -m venv .venv && source .venv/bin/activate    # Windows: .venv\Scripts\activate
+pip install -r Technical/requirements.txt
+
+pytest Technical/tests/test_all_models.py    # fresh clone: 159 passed, 2 skipped
 ```
 
-### Verify model replication
+The two skips are studies depending on a local-only data tree not part of the repository; every model implementation is exercised. `Technical/requirements.txt` lists only what the repository actually imports — external packages surveyed in `Technical/External/README.md` (econpizza, gEconpy, econ-ark, quantecon, …) are optional. **Local-only directories** (`Inputs/`, `Knowledge_Base/`, `empirical_studies/`, `Outputs/`) are gitignored — large PDFs, vendored repos, generated data, run outputs; they will not appear on a fresh clone.
+
+## API keys — bring your own (optional)
+
+No key is required to run the models, the test suite, or any simulation; keys are only needed to *fetch* live series. Copy `.env.example` to `.env` and set `FRED_API_KEY` (free), optionally `DATA_ROOT` (a local ALFRED / Z.1 / FRED CSV tree) and `DATA_KEYS` (an external key store). Without a key or local tree, calibration scripts fall back to **synthetic placeholder series** — fabricated, not observed; every artifact they produce is labelled `synthetic`, and `V01_validate_targets.py` reports those rows as `NOT_VALIDATED` rather than passing them against published benchmarks.
+
+## Quick start & data
 
 ```bash
-cd tests
-python verify_model_sim.py
+cd Technical/Models/SFC/godley_lavoie && python model_sim.py       # run an existing model
+cd tests && python verify_model_sim.py                              # verify replication
+cd calibration && python calibrate_model_pc.py                      # calibrate to US data
 ```
 
-### Calibrate to US data
+Data sources: Z.1 Financial Accounts (SFC sectoral balance sheets) · FRED macro series · BEA NIPA calibration targets · ALFRED historical vintages (real-time VAR analysis).
 
-```bash
-cd calibration
-python calibrate_model_pc.py
-```
+## License & history
 
-## How to Add a New Model
-
-1. **Source the paper**: Place the PDF in `{tradition}`
-2. **Extract the equations**: Transcribe the model's equations, tables, and parameters into `{tradition}`
-3. **Implement**: Create model code in `{model_name}`
-4. **Validate**: Write verification tests comparing to published results
-5. **Calibrate**: Add calibration scripts using the shared data loaders from `shared/`
-6. **Document**: Update `MODEL_CATALOG.md` with implementation status
-7. **Compare**: Add cross-model comparison studies
-
-## Data Sources
-
-Models draw on standard public macroeconomic data sources:
-
-- **Z.1 Financial Accounts** -- SFC models (sectoral balance sheets, flow of funds)
-- **FRED macro series** -- All traditions (GDP, unemployment, inflation, interest rates)
-- **BEA NIPA** -- Calibration targets across traditions
-- **FAILING_BANKS** -- Financial stability models
-- **Historical vintages** -- Real-time data analysis for VAR
-
-## Pipelines
-
-### Paper -> Knowledge Base
-```
-Papers -> transcribe equations/tables -> Knowledge_Base
-```
-
-### Empirical Comparison
-```
-data ingestion -> loading -> processing -> validation -> model estimation -> analysis -> output
-```
-
-## History
-
-This project began as "Levy Macro Model" (October 2025), focused on implementing the 12 Godley-Lavoie SFC textbook models. Renamed to "MacroModeling" (April 2026) and expanded to cover all major macroeconomic modeling traditions.
-
----
-
-**Version**: 7.0.0
-**Last Updated**: 2026-05-05
-**53 native models | 161 tests | 25 FRED series | 6 historical eras | 11 traditions | 27 repos | 53/53 equation cards | 53/53 mechanism tags | 33 PARAM_SPACES | 139x fast solver | ModelWorkbench | 10 reusable EquationBlocks | All gaps closed**
+MIT (code) + CC BY 4.0 (outputs/docs); `CITATION.cff` carries machine-readable citation metadata; authoritative per-model status lives in `Technical/MODEL_CATALOG.md`. Began as "Levy Macro Model" (October 2025), implementing the 12 Godley-Lavoie SFC textbook models; renamed **MacroModeling** (April 2026) and expanded to all major macroeconomic modeling traditions.
