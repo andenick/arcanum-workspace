@@ -1,6 +1,6 @@
 ---
 name: fullread
-description: Extract text from all PDFs in a folder using Sraffa 4.0 (no DARP)
+description: Extract text from all PDFs in a folder using Sraffa 4.0 (no DARP) — HDARP Framework v6.3 command
 ---
 
 **HDARP Framework v6.3** — see `VERSION_REGISTRY.md`
@@ -22,7 +22,7 @@ description: Extract text from all PDFs in a folder using Sraffa 4.0 (no DARP)
 - `input_path`: Folder of PDFs or single PDF path
 
 **Options**:
-- `--output DIR`: Output location (default: `_OCR_Only`)
+- `--output DIR`: Output location (default: `Technical/Knowledge_Base/_OCR_Only/`)
 - `--batch-size N`: PDFs per batch (default: 5)
 - `--wave WAVE_ID`: Process only a specific wave
 - `--single`: Process one batch only, then stop
@@ -31,11 +31,11 @@ description: Extract text from all PDFs in a folder using Sraffa 4.0 (no DARP)
 
 **Examples**:
 ```bash
-/fullread PDFs                          # Process all PDFs in folder
-/fullread PDFs --batch-size 3           # Smaller batches
-/fullread PDFs --single                 # One batch only
-/fullread document.pdf              # Single PDF
-/fullread PDFs --output _OCR_Only  # Default location (explicit)
+/fullread Inputs/PDFs/                          # Process all PDFs in folder
+/fullread Inputs/PDFs/ --batch-size 3           # Smaller batches
+/fullread Inputs/PDFs/ --single                 # One batch only
+/fullread Inputs/PDFs/document.pdf              # Single PDF
+/fullread Inputs/PDFs/ --output Technical/Knowledge_Base/_OCR_Only/  # Default location (explicit)
 ```
 
 ## What This Does
@@ -61,7 +61,7 @@ Processes all PDFs in a folder using **Sraffa 4.0** protocol without DARP. Produ
 1. Glob `input_path/**/*.pdf` (recursive)
 2. For each PDF: compute page count, file size, density estimate
 3. Sort by size (largest first for load balancing)
-4. Write `FULLREAD_STATE.json` to `Technical` with document inventory
+4. Write `FULLREAD_STATE.json` to `Technical/` with document inventory
 
 ---
 
@@ -87,7 +87,7 @@ Model: Sonnet (mandatory)
 
 YOUR ASSIGNMENT:
 - PDFs: {list of pdf paths}
-- Output: {document_id}
+- Output: Technical/Knowledge_Base/_OCR_Only/{document_id}/
 
 SRAFFA 4.0 PROTOCOL (for each PDF):
 1. Import: from sraffa40_processor import Sraffa40Processor
@@ -112,7 +112,7 @@ If context is filling up, compact your notes and continue processing.
 ### Output per Document
 
 ```
-{document_id}
+Technical/Knowledge_Base/_OCR_Only/{document_id}/
     FULL_TEXT.md              # Complete text in reading order
     page_manifest.json        # Per-page classification, engine, confidence, QA
     processing_summary.md     # Extraction statistics
@@ -144,8 +144,8 @@ After all agents complete:
 {
   "schema_version": "1.0",
   "last_updated": "2026-04-30T12:00:00Z",
-  "input_path": "PDFs",
-  "output_path": "_OCR_Only",
+  "input_path": "Inputs/PDFs/",
+  "output_path": "Technical/Knowledge_Base/_OCR_Only/",
   "total_documents": 25,
   "languages": ["en", "ru"],
   "batches": {
@@ -177,7 +177,7 @@ After all agents complete:
 
 - `/fullread` gives you searchable text fast. No table CSV extraction, no equation LaTeX, no figure descriptions.
 - `/sphdarp` gives you the full HDARP treatment: DARP + Sraffa 4.0 text + integration.
-- **Output separation**: `/fullread` writes to `_OCR_Only` while HDARP writes to `Knowledge_Base`. This prevents OCR-only output from conflicting with full HDARP extractions.
+- **Output separation**: `/fullread` writes to `Technical/Knowledge_Base/_OCR_Only/` while HDARP writes to `Technical/Knowledge_Base/`. This prevents OCR-only output from conflicting with full HDARP extractions.
 - A project can run `/fullread` first for quick access, then `/sphdarp` later. The HDARP output lives in a separate folder so both coexist. The `_OCR_Only/` version serves as a reference/fallback.
 - Both use the same `sraffa40_processor.py` core and the same Sraffa 4.0 protocol.
 
@@ -200,9 +200,9 @@ After all agents complete:
 
 ---
 
-**Command Version**: 6.1  
+**Command Version**: 6.3  
 **Protocol**: Sraffa 4.0  
-**Updated**: 2026-04-30
+**Updated**: 2026-06-13
 
 <!-- HDARP Framework v6.2 (2026-05-29): unified per VERSION_REGISTRY.md and HDARP_v6.2_UPGRADE_PLAN.md. Prior version stamps retained in history above. -->
-<!-- HDARP Framework v6.3 (2026-06-13): native RDB enrichment capture added. -->
+<!-- HDARP Framework v6.3 (2026-06-13): native-enrichment applicability clarified; fullread remains body-only and Sraffa Protocol remains 4.0. -->

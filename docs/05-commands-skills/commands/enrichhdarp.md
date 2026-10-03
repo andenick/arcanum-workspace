@@ -10,7 +10,7 @@ argument-hint: "[audit|remediate|full] [BATCH_NNN|CAMPAIGN_X]"
 
 **Command**: /enrichhdarp [mode] [target]
 **Full Name**: HDARP Enrichment Audit & Remediation Protocol
-**Version**: 6.2
+**Version**: 6.3
 **Created**: 2026-03-15
 **Updated**: 2026-04-30 — Sraffa 4.0 document-adaptive OCR integration for Type D remediation
 
@@ -56,9 +56,9 @@ This command runs **between steps 3 and 4** — it remediates quality issues fou
 Read BATCH_STATE.json to resolve the target scope.
 
 ```
-BATCH_STATE path: {Project}/BATCH_STATE.json
-Catalog path: {Project}/HDARP_MASTER_CATALOG.csv
-Knowledge_Base: {Project}/Knowledge_Base
+BATCH_STATE path: {Project}/Technical/HDARP_Processing/BATCH_STATE.json
+Catalog path: {Project}/Technical/HDARP_MASTER_CATALOG.csv
+Knowledge_Base: {Project}/Knowledge_Base/
 ```
 
 ### Target Resolution
@@ -183,7 +183,7 @@ Based on audit results, classify each document:
 
 ### Audit Report Output
 
-Generate: `{TARGET}_ENRICHMENT_AUDIT.md`
+Generate: `{Project}/Technical/HDARP_Processing/{TARGET}_ENRICHMENT_AUDIT.md`
 
 ```markdown
 # Enrichment Audit Report: {TARGET}
@@ -252,7 +252,7 @@ Classify remediation needs from audit results:
 ```
 Task: Read chunk PDFs, extract ONLY equations/tables/figures
 Input: chunk PDFs in HDARP_Processing/{doc}/chunks/
-Output: Overwrite placeholder files in {equations,tables,figures}/
+Output: Overwrite placeholder files in Knowledge_Base/{doc}/{equations,tables,figures}/
 Skip: body_text (already has real content)
 ```
 
@@ -260,7 +260,7 @@ Skip: body_text (already has real content)
 ```
 Task: Full 4-type HDARP extraction from chunk PDFs
 Input: chunk PDFs
-Output: All 4 content types in {doc}
+Output: All 4 content types in Knowledge_Base/{doc}/
 Process: Same as /sphdarp but targeted at specific docs
 ```
 
@@ -283,7 +283,7 @@ Workflow per chunk:
 2. Classify chunk pages (digital / scanned / mixed)
 3. Digital pages: PyMuPDF extraction (instant)
 4. Scanned/mixed pages: EasyOCR GPU → Agent QA → Chandra 2 if qa_fail_escalate
-5. Write body_text file to body_text
+5. Write body_text file to Knowledge_Base/{doc_id}/body_text/
 6. Write page_manifest_chunk_N.json with per-page QA results
 
 After all chunks for a doc:
@@ -390,23 +390,23 @@ Add session log entry to HDARP_CAMPAIGN_TRACKER.md with:
 
 | Resource | Path |
 |----------|------|
-| BATCH_STATE | {Project}/BATCH_STATE.json |
-| Master Catalog | {Project}/HDARP_MASTER_CATALOG.csv |
-| Campaign Tracker | {Project}/HDARP_CAMPAIGN_TRACKER.md |
-| Knowledge_Base | {Project}/Knowledge_Base |
+| BATCH_STATE | {Project}/Technical/HDARP_Processing/BATCH_STATE.json |
+| Master Catalog | {Project}/Technical/HDARP_MASTER_CATALOG.csv |
+| Campaign Tracker | {Project}/Technical/HDARP_CAMPAIGN_TRACKER.md |
+| Knowledge_Base | {Project}/Knowledge_Base/ |
 | Sraffa 4.0 Processor | sraffa40_processor.py |
 | Sraffa 4.0 Protocol | SRAFFA_4_PROTOCOL.md |
 | PDF Splitter | pdf_splitter_orchestrator.py |
 
 ---
 
-**Command Version**: 6.1
+**Command Version**: 6.3
 **Status**: PRODUCTION READY
 **Created**: 2026-03-15
-**Updated**: 2026-04-30
+**Updated**: 2026-06-13
 **HDARP Protocol**: v6.3
 **v2.0**: Sraffa 4.0 document-adaptive OCR for Type D remediation (EasyOCR GPU + Agent QA + Chandra 2 escalation), replaces Sraffa 3.0 multi-engine consensus
 **Key**: Audit existing output, classify failures, targeted remediation (including OCR), before/after metrics
 
 <!-- HDARP Framework v6.2 (2026-05-29): unified per VERSION_REGISTRY.md and HDARP_v6.2_UPGRADE_PLAN.md. Prior version stamps retained in history above. -->
-<!-- HDARP Framework v6.3 (2026-06-13): native RDB enrichment capture added. -->
+<!-- HDARP Framework v6.3 (2026-06-13): added Type E native RDB metadata backfill. -->

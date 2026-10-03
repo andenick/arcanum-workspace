@@ -1,5 +1,5 @@
 ---
-description: "State-aware, idempotent PDF preparation for HDARP v6.2 (discovery, diagnosis, remediation, preparation, verification)"
+description: "State-aware, idempotent PDF preparation for HDARP v6.3 (native-enrichment flag, discovery, diagnosis, remediation, preparation, verification)"
 allowed-tools: Bash, Read, Write, Glob, Grep, Agent
 argument-hint: "[N | --wave WAVE | --batch BATCH | --folder FOLDER | --diagnose-only | --remediate-only | --force | --resume]"
 ---
@@ -16,7 +16,7 @@ argument-hint: "[N | --wave WAVE | --batch BATCH | --folder FOLDER | --diagnose-
 MASTER COMMAND FILE
 ===================
 Command: /prepareHDARP
-Version: v6.2
+Version: v6.3
 Created: November 30, 2025
 Last Updated: April 27, 2026
 
@@ -28,9 +28,10 @@ VERSION HISTORY:
 - v5.0 (2026-04-03): Sonnet Mandatory, flat 10-page, 10-chunk batching
 - v5.1 (2026-04-03): Preflight content-filter routing
 - v6.0 (2026-04-27): Complete rewrite. Four-phase state machine (discover → diagnose → remediate → prepare). State-aware, idempotent, handles 15 known failure modes. Python engine delegation.
+- v6.3 (2026-06-13): Native-enrichment manifest flag added; Sraffa engine remains 4.0.
 -->
 
-# Prepare HDARP Command v6.2
+# Prepare HDARP Command v6.3
 
 **Command**: `/prepareHDARP`
 **Purpose**: State-aware, idempotent PDF preparation for HDARP processing
@@ -55,7 +56,7 @@ This command is step **2** (PREPARE) in the HDARP lifecycle:
 /prepareHDARP --wave Wave_05               # All docs in a specific wave
 /prepareHDARP --wave Wave_05,Wave_06       # Multiple waves
 /prepareHDARP --batch BATCH_858-BATCH_900  # Batch range
-/prepareHDARP --folder "2026.04.08 Books"
+/prepareHDARP --folder "Inputs/2026.04.08 Books"
 /prepareHDARP --diagnose-only              # Phase 0+1 only, no writes
 /prepareHDARP --remediate-only             # Phase 0+1+2, no new chunking
 /prepareHDARP --force                      # Re-verify even PREPARED batches
@@ -90,19 +91,19 @@ Check for `BATCH_STATE_CANONICAL.txt` at project root. If it exists, use the pat
 
 If it does NOT exist, check both locations:
 - `{project_root}/BATCH_STATE.json`
-- `BATCH_STATE.json`
+- `{project_root}/Technical/HDARP_Processing/BATCH_STATE.json`
 
 If both exist and differ in size by >5%:
 1. Run the consolidator to compare:
    ```bash
    python "batch_state_consolidator.py" \
-     "{root}/BATCH_STATE.json" "{root}/BATCH_STATE.json" \
-     --report "{root}/BATCH_STATE_CONSOLIDATION_REPORT.md" --dry-run
+     "{root}/BATCH_STATE.json" "{root}/Technical/HDARP_Processing/BATCH_STATE.json" \
+     --report "{root}/Technical/BATCH_STATE_CONSOLIDATION_REPORT.md" --dry-run
    ```
 2. Show the user the comparison summary (batch counts, VERIFIED counts, last_updated)
 3. Ask user to confirm which is canonical
 4. Write `BATCH_STATE_CANONICAL.txt` with the confirmed path
-5. Archive the non-canonical copy to `archive`
+5. Archive the non-canonical copy to `Technical/archive/`
 
 If only one exists, use it and write `BATCH_STATE_CANONICAL.txt`.
 
@@ -138,7 +139,7 @@ python "preparehdarp_v6_engine.py" diagnose \
   --project-root "{project_root}" \
   --batch-state "{canonical_batch_state_path}" \
   --scope "{scope_string}" \
-  --output "{project_root}/preparehdarp_v6_manifest.json"
+  --output "{project_root}/Technical/preparehdarp_v6_manifest.json"
 ```
 
 The engine classifies every document in scope into one of 10 states:
@@ -189,11 +190,11 @@ Run the engine's remediate command (dry-run first if user wants preview):
 ```bash
 # Optional dry-run preview:
 python "preparehdarp_v6_engine.py" remediate \
-  --manifest "{project_root}/preparehdarp_v6_manifest.json" --dry-run
+  --manifest "{project_root}/Technical/preparehdarp_v6_manifest.json" --dry-run
 
 # Actual remediation:
 python "preparehdarp_v6_engine.py" remediate \
-  --manifest "{project_root}/preparehdarp_v6_manifest.json"
+  --manifest "{project_root}/Technical/preparehdarp_v6_manifest.json"
 ```
 
 The engine applies these remediations:
@@ -220,7 +221,7 @@ Only runs on documents classified as `NEEDS_PREPARATION`. The engine handles:
 
 ```bash
 python "preparehdarp_v6_engine.py" prepare \
-  --manifest "{project_root}/preparehdarp_v6_manifest.json" \
+  --manifest "{project_root}/Technical/preparehdarp_v6_manifest.json" \
   --splitter-path "pdf_splitter_orchestrator.py"
 ```
 
@@ -252,8 +253,8 @@ If chunks + valid v6.0 manifest already exist for a document, it is classified a
 
 ```bash
 python "preparehdarp_v6_engine.py" verify \
-  --manifest "{project_root}/preparehdarp_v6_manifest.json" \
-  --output "{project_root}/HDARP_v6.0_PREPARATION_REPORT.md"
+  --manifest "{project_root}/Technical/preparehdarp_v6_manifest.json" \
+  --output "{project_root}/Technical/HDARP_v6.0_PREPARATION_REPORT.md"
 ```
 
 Verification checks:
@@ -338,12 +339,12 @@ Display the Next Steps section to the user with the command to proceed (e.g., `/
 
 ---
 
-**Command Version**: 6.1 State-Aware + Idempotent + 15 FM Remediation
+**Command Version**: 6.3 Native-Enrichment Enablement + State-Aware + Idempotent + 15 FM Remediation
 **Status**: PRODUCTION READY
 **Created**: 2025-11-30
-**Updated**: 2026-04-27
-**HDARP Protocol**: v6.3 (four-phase state machine, Python engine delegation)
+**Updated**: 2026-06-13
+**HDARP Protocol**: v6.3 (native-enrichment flag, four-phase state machine, Python engine delegation)
 **Backward Compatible**: Reads and upgrades v3.3/4.5/5.0/5.1 manifests and BATCH_STATE entries
 
 <!-- HDARP Framework v6.2 (2026-05-29): unified per VERSION_REGISTRY.md and HDARP_v6.2_UPGRADE_PLAN.md. Prior version stamps retained in history above. -->
-<!-- HDARP Framework v6.3 (2026-06-13): native RDB enrichment capture added. -->
+<!-- HDARP Framework v6.3 (2026-06-13): native-enrichment enabling flag added; Sraffa engine remains 4.0. -->

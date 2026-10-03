@@ -1,12 +1,12 @@
 ---
-description: "SPHDARP-ASP: Smart Parallel HDARP with Handwriting (5 content types) for Anwar Shaikh Papers"
+description: "SPHDARP-ASP — HDARP Framework v6.4 (command v1.0): Smart Parallel HDARP with Handwriting (5 content types) for Anwar Shaikh Papers"
 allowed-tools: Bash, Read, Write, Glob, Grep, Task
 argument-hint: "[number]"
 ---
 
-**HDARP Framework v6.3** — see `VERSION_REGISTRY.md`
+**HDARP Framework v6.4** — see `VERSION_REGISTRY.md`
 
-> **Native RDB metadata capture (v6.3):** as each table CSV is written, append one
+> **Native RDB metadata capture (v6.4):** as each table CSV is written, append one
 > `RDB_METADATA*.jsonl` line per the doctrine in `hdarp-processing.md`
 > ("Native RDB Enrichment Capture") + spec `NATIVE_ENRICHMENT_CONTRACT.md`.
 > **ASP specific:** a table transcribed from **handwriting** gets `transcription_status` from the
@@ -16,7 +16,7 @@ argument-hint: "[number]"
 
 **Command**: /sphdarp-asp [N]
 **Full Name**: Smart Parallel Hybrid Direct Agent Reading Protocol — ASP Handwriting Extension
-**Version**: 6.2
+**Version**: 6.3
 **Based On**: SPHDARP v4.5
 **Created**: 2026-03-23
 **Project**: ASP (Anwar Shaikh Papers) ONLY
@@ -75,9 +75,15 @@ Each processor agent extracts ALL 5 types from every chunk:
 - Describe charts, graphs, diagrams
 - One file per figure: `Figures/chunk_NNN_figure_001.md`
 
-**D. Body Text → Text** (unchanged, Sraffa 4.0 OCR fallback)
-- Extract printed/typed text
-- One file per chunk: `body_text/chunk_NNN_body.txt`
+**D. Body Text → Markdown** (agent-read; Sraffa 4.0 is the mandatory verbatim sibling, NOT a fallback)
+- Extract printed/typed text by **agent reading** of the chunk PDF
+- One file per chunk range: `FULL_TEXT_chunks_NNN_NNN.md` — the current convention, **with a
+  `<!-- chunk_NNN -->` boundary marker around each chunk's text.** The markers are what prove agent
+  reading. The old `body_text/chunk_NNN_body.txt` pattern is **auto-FAILed** by the extraction-integrity
+  check in `sphdarp.md` Phase 3.25 as "a PyMuPDF dump, not HDARP" — never emit it.
+- The Sraffa 4.0 OCR pass is the **mandatory end-of-run verbatim sibling** for every document, landing
+  in `Knowledge_Base/_OCR_Only/<short_id>/`; it augments this type and never replaces it. Canonical
+  rule: `hdarp-processing.md`, "Hybrid body text = two layers". (Sraffa-**ASP** below stays a genuine fallback — for Type E handwriting only.)
 
 **E. Handwriting → Markdown** (NEW)
 1. **Detect**: Scan each page for handwritten content
@@ -135,15 +141,14 @@ python "sraffa_asp_chunk_ocr.py" \
 ## Output Structure
 
 ```
-{document_id}
+Knowledge_Base/{document_id}/
 ├── CSV_Tables/                     (Type A)
 │   └── chunk_NNN_table_001.csv
 ├── Equations/                      (Type B)
 │   └── chunk_NNN_equation_001.md
 ├── Figures/                        (Type C)
 │   └── chunk_NNN_figure_001.md
-├── body_text/                      (Type D)
-│   └── chunk_NNN_body.txt
+├── FULL_TEXT_chunks_NNN_NNN.md      (Type D — agent-read, `<!-- chunk_NNN -->` markers required)
 ├── handwriting/                    (Type E — NEW)
 │   ├── chunk_NNN_handwriting.md        (best transcription)
 │   ├── chunk_NNN_handwriting_meta.json (classification, confidence, source)
@@ -182,7 +187,7 @@ python "sraffa_asp_chunk_ocr.py" \
 **Agent Assignment**:
 - YOUR DOCUMENT: {document_name}
 - YOUR CHUNKS: {chunk_list} ({chunk_count} chunks total)
-- OUTPUT DIRECTORY: {document_name}
+- OUTPUT DIRECTORY: Knowledge_Base/{document_name}/
 - HANDWRITING CLASSIFICATION: {hw_classification from handwriting_survey.csv}
 
 **Smart Batching**: Same as SPHDARP v4.5 (one document per agent, 2-5 chunks max)
@@ -196,7 +201,8 @@ python "sraffa_asp_chunk_ocr.py" \
 - A. Tables → CSV (98%+ accuracy)
 - B. Equations → LaTeX (100% target)
 - C. Figures → Markdown (200+ words per figure)
-- D. Body Text → Text Storage (Sraffa 4.0 OCR fallback)
+- D. Body Text → agent-read `FULL_TEXT_chunks_NNN_NNN.md` with `<!-- chunk_NNN -->` markers
+  (Sraffa 4.0 = mandatory end-of-run verbatim sibling, not a fallback — see `hdarp-processing.md`, "Hybrid body text = two layers")
 - **E. Handwriting → Markdown (classify + transcribe)**
   - Classify: HW_NONE / HW_MARGINAL / HW_FULL_PAGE / HW_MATHEMATICAL / HW_FLASH_CARD / HW_DIAGRAM
   - Transcribe handwritten content to markdown
@@ -229,7 +235,7 @@ Use this to prioritize: PURE_HANDWRITING and LIKELY_HANDWRITING docs get special
 ## Sraffa-ASP Engine Location
 
 ```
-sraffa_asp
+sraffa_asp/
 ├── __init__.py
 ├── sraffa_asp_engines.py       # Surya + TrOCR wrappers
 ├── sraffa_asp_consensus.py     # 5-rule handwriting consensus
@@ -254,4 +260,4 @@ All other features are identical to `/sphdarp`:
 - Performance benchmarks
 
 <!-- HDARP Framework v6.2 (2026-05-29): unified per VERSION_REGISTRY.md and HDARP_v6.2_UPGRADE_PLAN.md. Prior version stamps retained in history above. -->
-<!-- HDARP Framework v6.3 (2026-06-13): native RDB enrichment capture added. -->
+<!-- HDARP Framework v6.3 (2026-06-13): native RDB enrichment capture added for ASP table and handwriting-table outputs. -->
