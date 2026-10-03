@@ -1,78 +1,56 @@
-# Westchester County Sidewalk Coverage Analysis
-## V2.2 POST-BUG-FIX - Analysis Complete | Validation Ready
+# Westchester — County Data Platform
 
-**Navigation**: `START_HERE.md` | `QUICK_REFERENCE.md` | `DATA_VERSIONING.md`
+**A full-stack web application for Westchester County, NY open data — demographic analysis, sidewalk infrastructure planning, transit accessibility, and interactive mapping. React frontend + FastAPI backend.**
 
----
-
-## Recent Updates (Nov 16-20, 2025)
-
-**Multiple critical issues discovered and resolved.**
-
-- Segmentation data integrity corrected (Nov 16: v2.1 CORRECTED, 99.99998% accuracy)
-- Three analysis bugs fixed (Nov 17: coordinate system, detection tolerance, data corruption)  
-- Post-fix analysis complete (v2.2: 34 of 35 configurations showing realistic 4-9% coverage)
-- GRASS GIS imports regenerated with corrected post-fix data (Nov 20)
-- Comprehensive validation methodology designed
-- Manual validation execution pending (QGIS visual inspection + statistical analysis)
-
-**Details**: See `DATA_VERSIONING.md` and `BUG_ANALYSIS_AND_FIXES_2025-11-17.md`
+Repo: `andenick/westchester` (verified 2026-10-02).
 
 ---
 
-## Status: Analysis Complete - Validation Pending
+## Why This Exists
 
-| Metric | Value |
-|--------|-------|
-| **Version** | 2.2 POST-BUG-FIX (November 17-20, 2025) |
-| **Segmentation** | Complete & Verified (v2.1 CORRECTED, 99.99998% accuracy) |
-| **Roads Analyzed** | 31,605 (OpenStreetMap source) |
-| **Total Road Length** | 3,157.5 miles |
-| **Analysis Results** | 34 of 35 configs complete (realistic 4-9% coverage) |
-| **Recommended Config** | seg20_buf35 (8.56% coverage, best cost-benefit ratio) |
-| **Validation Status** | Methodology ready, execution pending |
+Westchester County publishes open data across dozens of portals (county GIS, census, MTA, municipal budgets) but there's no unified platform for analysis. This project combines demographic, infrastructure, transit, and property data into interactive dashboards designed for municipal planners, researchers, and residents.
 
-**Complete documentation and navigation: `START_HERE.md`**
+## Quick Start
 
----
+```bash
+git clone https://github.com/andenick/westchester.git
+cd westchester
 
-## Key Results
+# Backend
+cd Technical/src/backend
+pip install -r requirements.txt
+python main.py                     # Starts on http://localhost:8000
 
-### Coverage Analysis (seg20_buf35 - Recommended Configuration)
-- **Total Roads**: 31,605
-- **Both Sides Coverage**: 723 roads (2.29%) = 31.14 miles (0.99%)
-- **One Side Coverage**: 1,981 roads (6.27%) = 100.61 miles (3.19%)
-- **No Coverage**: 28,901 roads (91.44%) = 3,025.76 miles (95.83%)
-- **Total Coverage**: 8.56% of road length has at least one sidewalk
+# Frontend (new terminal)
+cd Technical/src/frontend
+npm install
+npm run dev                        # Starts on http://localhost:5173
+```
 
-### Configuration Comparison (buf35 results)
-| Configuration | Total Coverage | Both Sides | One Side | Processing Time | File Size |
-|---------------|----------------|------------|----------|-----------------|-----------|
-| seg10_buf35 | 7.83% | 2.04% | 5.79% | ~70 min | 808 MB |
-| seg20_buf35 (Recommended) | 8.56% | 2.29% | 6.27% | ~45 min | 448 MB |
-| seg30_buf35 | 9.19% | 2.52% | 6.67% | ~35 min | 328 MB |
+## Features
 
-**Recommendation**: seg20_buf35 provides best balance of spatial resolution, processing performance, and practical utility (weighted score: 7.95/10).
+- **Demographic Dashboard**: population, income, housing, and education data by municipality
+- **Sidewalk Planning Dashboard**: infrastructure coverage analysis with interactive mapping
+- **Transit Accessibility**: Metro-North station analysis and commute patterns
+- **Property Tax Explorer**: assessment and tax-rate comparisons across municipalities
+- **Interactive Maps**: Leaflet-based geospatial visualization with layer controls
 
----
+## Data Sources
 
-## Quick Links
+| Source | Content | Access |
+|--------|---------|--------|
+| Westchester County GIS | Tax parcels, sidewalks, municipal boundaries | [GIS Portal](https://gis.westchestergov.com/) |
+| US Census / ACS | Population, income, housing, education (2020 + 5-year ACS) | [data.census.gov](https://data.census.gov/) |
+| MTA / Metro-North | Station locations, ridership, schedules | [MTA Open Data](https://new.mta.info/open-data) |
+| Westchester County Budget | Municipal budget documents | County website |
+| USDA SNAP | Food access indicators | [USDA ERS](https://www.ers.usda.gov/) |
 
-**Latest Documentation**:
-- `DATA_VERSIONING.md` - Complete version history and data lineage
-- `COMPARATIVE_ANALYSIS_DECISION_MATRIX.md` - Configuration comparison
-- `VALIDATION_METHODOLOGY.md` - Comprehensive validation plan
-- `QUICK_REFERENCE.md` - Updated file paths and statistics
+## Structure & Stack
 
-**Technical Reports**:
-- `BUG_ANALYSIS_AND_FIXES_2025-11-17.md` - Detailed bug analysis
-- `SEGMENTATION_FINAL_REPORT.md` - v2.1 verification
-- `SEG50_CONFIGURATION_ASSESSMENT.md` - Status of incomplete configs
+`Inputs/` (raw shapefiles, CSVs) · `Technical/src/` — `backend/` (FastAPI server), `frontend/` (React + Vite + Tailwind dashboard pages), `data_importers/`, `data_pipeline/` · `Output/` (deliverables). Stack: React · TypeScript · Vite · Tailwind CSS · Leaflet · Recharts · FastAPI · Python · SQLite · Leaflet + GeoJSON maps · Netlify (frontend) + Render (backend) deployment.
 
-**Historical Documentation**:
-- `SESSION_SUMMARY_2025-11-16.md` - Data correction session
-- `CRITICAL_DATA_INTEGRITY_FINDINGS.md` - Original issue discovery
+**Requirements**: Python 3.11+ (backend/data), Node.js 18+ (frontend). **No API keys required to run** — all data is from public open-data portals; an optional free Socrata app token (`SOCRATA_APP_TOKEN`) raises the anonymous rate limit for `data.ny.gov` downloads (see `Technical/.env.template`).
 
----
+## Citation & License
 
-**Project Health**: GREEN | **Data Quality**: Verified | **Progress**: ~90%
+Suggested citation: Anderson, Nicholas. *Westchester County Data Platform* (2026). https://github.com/andenick/westchester — the repository README carries the full BibTeX entry. License: MIT.

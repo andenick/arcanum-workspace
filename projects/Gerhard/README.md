@@ -24,10 +24,9 @@ Comprehensive fiscal analysis platform covering:
 pip install -r requirements.txt
 
 # 2. Point DATA_ROOT at your external source-data folder (where bulk
-#    downloads live), and OUTPUT_ROOT at where outputs should be written.
+#    downloads live).
 #    See data/MANIFEST.md for what to download and the expected layout.
 export DATA_ROOT=/path/to/your/source-data      # e.g. contains WorldBank/WDI_CSV/, IMF/
-export OUTPUT_ROOT=/path/to/your/outputs        # optional; defaults to repo-relative paths
 #    (Windows PowerShell: $env:DATA_ROOT = "D:\path\to\source-data")
 
 # 3. Provide your own API key(s) — see "API keys" below.
@@ -35,9 +34,10 @@ export FRED_API_KEY=your_free_fred_key
 ```
 
 `DATA_ROOT` (default `data`) is where the pipeline READS bulk source data
-(World Bank WDI CSV, IMF WEO, etc.). `OUTPUT_ROOT` (default `outputs`) is where
-the project may write its own outputs. Copy `.env.example` to `.env` and fill it
-in, or export the variables in your shell.
+(World Bank WDI CSV, IMF WEO, etc.). Outputs are always written to
+repo-relative paths (`Output/`, `Countries/`, `Technical/data/processed/`);
+there is no environment variable for the output location. Copy `.env.example`
+to `.env` and fill it in, or export the variables in your shell.
 
 ### API keys — bring your own
 
@@ -47,6 +47,7 @@ is hardcoded.
 | Service | Used by | Get a free key | Env var |
 |---------|---------|----------------|---------|
 | FRED (St. Louis Fed) | yield-curve & monetary pipeline (L110/L111), webapp FRED adapter | <https://fred.stlouisfed.org/docs/api/api_key.html> | `FRED_API_KEY` |
+| BLS (Bureau of Labor Statistics) | BLS series pull (see `data/MANIFEST.md`) | <https://www.bls.gov/developers/> | `BLS_API_KEY` |
 | News API (optional) | experimental fiscal-news collector | <https://newsapi.org/register> | `NEWS_API_KEY` |
 | NYT (optional) | experimental fiscal-news collector | <https://developer.nytimes.com/get-started> | `NYT_API_KEY` |
 | The Guardian (optional) | experimental fiscal-news collector | <https://open-platform.theguardian.com/access/> | `GUARDIAN_API_KEY` |
@@ -86,7 +87,7 @@ Gerhard/
 │   │   ├── [CODE]_PROFILE.md   # Country metadata
 │   │   └── [CODE]_SOURCES.md   # Data sources
 │   └── MASTER_INDEX.md         # All 202 countries listed
-├── Technical                  # Implementation
+├── Technical/                  # Implementation
 │   ├── src/                    # 49 production Python scripts
 │   │   ├── utils/              # Shared utilities (config, paths, I/O)
 │   │   └── experimental/       # 10 untested prototypes

@@ -7,18 +7,25 @@ A historically-calibrated banking CEO simulation built as a C++ statistical engi
 ```bash
 cd Technical/StatisticalEngine
 
-# Build (MSVC 2022 / Visual Studio 17 — kill zombies first; reconfigure after new test files)
+# 1. Build the web frontend (Node 20+). The Vite bundle is generated output
+#    and is NOT committed — skip this and the served page's JS/CSS 404.
+cd frontend && npm ci && npm run build && cd ..
+
+# 2. Build the engine (MSVC 2022 / Visual Studio 17 — kill zombies first; reconfigure after new test files)
 taskkill /F /IM stvg_server.exe /IM stvg_tests.exe /IM stvg_autoplay.exe
 cmake -B build -G "Visual Studio 17 2022" -DCMAKE_BUILD_TYPE=Debug -Wno-dev
 cmake --build build --config Debug --parallel 4
 
-# Run tests (505 tests: 504 pass / 1 skip / 0 fail)
+# 3. Run tests (505 tests: 504 pass / 1 skip / 0 fail)
 build\Debug\stvg_tests.exe --gtest_brief=1
 
-# Play in browser
+# 4. Play in browser
 build\Debug\stvg_server.exe 8080 static
 # Open http://localhost:8080/
 ```
+
+Or build the self-contained Docker image: `docker build -t stvg:local .` then
+`docker run --rm -p 8080:8080 -v stvg_data:/var/lib/stvg stvg:local`.
 
 ## The Game
 
@@ -51,8 +58,8 @@ build\Debug\stvg_server.exe 8080 static
 | NPC character cast | 29 (12 recurring bankers + 17 presidents) |
 | Hire archetypes | 8 families + 33 specializations |
 | Telemetry event types | 42 (incl. dwell + hover) |
-| Engine header files | 59 (core, game, math, simulation, api, autoplay) |
-| REST endpoints | 40 routes (Crow) + WebSocket |
+| Engine header files | 60 (core, game, math, simulation, api, autoplay) |
+| REST endpoints | 45 routes (Crow) + WebSocket |
 | Unit tests | 505 (504 pass / 1 skip / 0 fail) |
 | Regulatory frameworks | 7 (Glass-Steagall through AI/Climate regulation) |
 
@@ -61,7 +68,7 @@ build\Debug\stvg_server.exe 8080 static
 ```
 Svelte 5 + Vite + TypeScript  ←→  Crow REST/WebSocket  ←→  C++ Statistical Engine
      ↓                                  ↓                         ↓
- TopBar + TabShell                40 REST endpoints         59 header files
+ TopBar + TabShell                45 REST endpoints         60 header files
  4 tabs: Economy/Hire/Bank/Fin    WebSocket broadcast       GARCH markets + econ block
  CharacterCard portraits          Game state management     MacroHistory / ArchetypeRegistry
  Macro + market charts            /macro-history, /trade    ReputationLens / PersonalBook
@@ -77,13 +84,13 @@ See `ARCHITECTURE.md` for the full layer diagram.
 STVG/
 ├── NORTH_STAR.md                    # Immutable founding vision = STAR_01 (DO NOT MODIFY)
 ├── README.md                        # This file
-├── instructions.md          # Agent onboarding instructions
+├── START_PLAYING.md                 # Player onboarding
 ├── Stars/                           # Vision documents (STAR_01→NORTH_STAR, STAR_02 day-trading
 │   │                                #   overhaul + append-only addenda); see Stars/README.md
 │   └── STAR_02_DAY_TRADING_FEEL_AND_CHARACTERS.md
 ├── Technical
 │   ├── StatisticalEngine/           # THE ENGINE
-│   │   ├── include/stvg/            # 59 headers (core, game, math, simulation, api, autoplay)
+│   │   ├── include/stvg/            # 60 headers (core, game, math, simulation, api, autoplay)
 │   │   ├── src/                     # main.cpp, autoplay_main.cpp, game handler .cpp
 │   │   ├── tests/                   # 62 test files (505 tests)
 │   │   ├── frontend/               # Svelte 5 + Vite + TypeScript (runes stores, tab shell, lightweight-charts v5)
@@ -93,16 +100,12 @@ STVG/
 │   │   ├── docs/                    # ARCHITECTURE, PROJECT_HISTORY, FILE_CATALOG
 │   │   └── CMakeLists.txt           # Build config (4 targets)
 │   ├── Content/kb_mining/           # STAGED KB-mined events/characters (owner review before merge)
-│   ├── Plans/                       # STAR_02_OVERHAUL_PLAN, READY_FOR_PLAY_PLAN, roster design, …
-│   ├── _playtest/                   # PERMANENT screenshot/telemetry harness — being reorganized
-│   │                                #   into harness/ (keepers) + archive_probes/ (one-off probes)
-│   │                                #   + shots/ (evidence) + analyze_session.py + README
-│   ├── megaplan_state.json          # Canonical megaplan execution state
-│   ├── Handoffs                    # Session handoff documentation
-│   └── PROGRESS_LOG.md              # Development session log
-├── Inputs                          # Source materials (read-only)
-├── Outputs                         # Final deliverables
-└── Archive/                         # Deprecated: Legacy Engine, old docs, React prototype
+│   └── _playtest/                   # PERMANENT screenshot/telemetry harness — being reorganized
+│                                    #   into harness/ (keepers) + archive_probes/ (one-off probes)
+│                                    #   + shots/ (evidence) + analyze_session.py + README
+├── play.ps1 / analyze.ps1           # Play + telemetry-analysis helpers
+├── CITATION.cff                     # Machine-readable citation
+└── LICENSE
 ```
 
 ## Key Documents
@@ -115,9 +118,7 @@ STVG/
 ## Current Status
 
 **STAR_02 "day-trading feel & characters" overhaul complete (2026-06-12)** — executed as a
-9-subagent plan against `Stars/STAR_02_DAY_TRADING_FEEL_AND_CHARACTERS.md`; see
-`HANDOFF_20260612_094900.md` and
-`megaplan_state.json`. Headlines: a **4-tab Svelte UI**
+9-subagent plan against `Stars/STAR_02_DAY_TRADING_FEEL_AND_CHARACTERS.md`. Headlines: a **4-tab Svelte UI**
 (Economy / Hire / My Bank / Financials), a **portrait + credibility system** (Hades-style
 character pop-ups whose language signals honesty), an **archetype × macro P&L engine**
 (division revenue distributed by per-archetype betas + variance), a **lending-first early
@@ -145,21 +146,12 @@ political engine, climate/AI endgame, historical calibration from FRED data, sav
 **plus STAR_02**: MacroHistory, ArchetypeRegistry (8 families + 33 specializations), ReputationLens,
 PersonalBook, event→market sign-weighting, portrait/credibility cast (12 bankers + 17 presidents).
 
-**What's next**: owner **playtest loop** (P10 — play sessions; telemetry lands in
+**What's next**: owner **playtest loop** (play sessions; telemetry lands in
 `Technical/StatisticalEngine/telemetry/`; `python Technical/_playtest/analyze_session.py` → iterate tunables); **KB merge review**
 (`kb_mining` — staged events/characters await owner sign-off); **sprite
-generation on the RTX 5090 + tiny-tower floor view** (P9; placeholder strip in My Bank now);
+generation + tiny-tower floor view** (placeholder strip in My Bank now);
 a **leverage death-spiral balance pass** (pre-existing: bots die ~Q304 at 19.4× leverage,
 archetype-independent); then audio assets + itch.io packaging.
-
-**Deployment (game.volcker.org) — EDGE-WIRED + ACCESS-GATED (2026-06-13):** the game is served behind
-an authenticating reverse proxy and invite-gated by
-one-time PIN. `https://game.volcker.org` is publicly routed and host-verified (internal smoke + WS
-101; edge 302→Access; D6 capacity probe → `STVG_MAX_SESSIONS=40`), but **not yet flipped to public-LIVE** —
-the owner's OTP play-through from outside the LAN, the Uptime-Kuma monitor, the WAF rules, and an optional
-`/healthz` Access bypass are the remaining steps (`OWNER_ACTIONS_GOLIVE.md`). Hosting
-source of truth: `STVG_SERVING.md`; plan + gate:
-`GAME_VOLCKER_DEPLOYMENT_PLAN.md §D8`.
 
 ## How to Play
 
