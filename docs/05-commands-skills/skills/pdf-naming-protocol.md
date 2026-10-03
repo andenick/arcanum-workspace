@@ -1,11 +1,11 @@
 ---
 name: pdf-naming-protocol
 version: "1.2"
-description: "Normalize bulk-library PDF filenames in `_PDF_LIBRARY/<Project>/` to the unified `[YYYY] Author - Title.<ext>` form via a multi-model VLM+LLM consensus pipeline on RTX 5090 (Hopper engine). V2 panel: GLM-OCR title-page reader + Qwen3-32B + gemma-4-31B + Qwen3-Coder consensus composer. Operates only on bulk-library entries; wishlist-tracked `<wl_id>__...` files are left alone. Writes to UNIFIED_RENAME_HISTORY.csv + RENAME_LEDGER.csv + PDF_REGISTRY.csv atomically."
+description: "Normalize bulk-library PDF filenames in `_PDF_LIBRARY/<Project>/` to the unified `[YYYY] Author - Title.<ext>` form via a multi-model VLM+LLM consensus pipeline on a local GPU (Hopper engine). V2 panel: GLM-OCR title-page reader + Qwen3-32B + gemma-4-31B + Qwen3-Coder consensus composer. Operates only on bulk-library entries; wishlist-tracked `<wl_id>__...` files are left alone. Writes to UNIFIED_RENAME_HISTORY.csv + RENAME_LEDGER.csv + PDF_REGISTRY.csv atomically."
 when-to-use: '"User wants to normalize messy bulk-library filenames (e.g., `nd__anon__INVE-POST-0024__768d62b10f.pdf`, `652.pdf`) to human-readable `[YYYY] Author - Title.<ext>`. Run after `/robert-pdf-sync` has placed PDFs into Robert; before HDARP campaigns or `/hopper` extraction if filename readability matters."'
-search-hints: "pdf naming rename vlm gpu hopper [YYYY] author title bulk library normalize human-readable filename protocol 5090 glm-ocr qwen3 gemma multi-model consensus v2"
+search-hints: "pdf naming rename vlm gpu hopper [YYYY] author title bulk library normalize human-readable filename protocol glm-ocr qwen3 gemma multi-model consensus v2"
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep
-requires: ".venv-5090 (torch cu128 sm_120), Hopper engine + gpu_namer_*/gpu_compose scripts, llama.cpp + GGUF roster (Qwen3-32B + gemma-4-31B + Qwen3-Coder + GLM-OCR)"
+requires: "local Hopper venv (CUDA-enabled torch), Hopper engine + gpu_namer_*/gpu_compose scripts, llama.cpp + GGUF roster (Qwen3-32B + gemma-4-31B + Qwen3-Coder + GLM-OCR)"
 part-of: "PDF Canonicalization Pipeline (acquisition → robert-pdf-sync → pdf-naming-protocol → /hopper OR /hdarp-campaign). The acquisition step is not part of this export."
 ---
 
@@ -54,14 +54,14 @@ Examples:
 
 For each PDF in `_PDF_LIBRARY/<Project>/` matching scope:
 1. **Scope filter**: by default (`bulk_only`), skip files matching `^WL-...__` (wishlist-tracked). With `--scope all`, attempt to normalize everything except files already in `[YYYY] Author - Title.<ext>` form.
-2. **VLM read**: render first N pages (default 3), pass through a local Hopper VLM (Llama-3.2-Vision or similar on RTX 5090) to extract `{title, author, year, language}`.
+2. **VLM read**: render first N pages (default 3), pass through a local Hopper VLM (Llama-3.2-Vision or similar, local GPU) to extract `{title, author, year, language}`.
 3. **LLM compose**: a small LLM agent composes the final `[YYYY] Author - Title.<ext>` per the strict format (Title ≤ 10 words; sanitize illegal filename chars; collapse whitespace).
 4. **Confidence gate**: if VLM confidence below threshold OR LLM cannot compose, mark `needs_review` and skip the rename.
 5. **Atomic rename**: move file → new name; update PDF_REGISTRY `canonical_name` + `current_flat_name`; update RENAME_LEDGER with `operation: pdf_naming_protocol_v1`; rebuild content-type symlinks pointing at new name.
 
 ## Engine spec (current, as deployed)
 
-- **GPU**: RTX 5090 32 GB (sm_120). Hopper `.venv-5090` torch 2.12.0.dev20260408+cu128.
+- **GPU**: a 32 GB-class consumer GPU. Hopper engine venv with CUDA-enabled torch.
 - **VLM (title-page read for scanned/opaque)**: **GLM-OCR** via Hopper `ModelServer` on port 8088 (not 8090 — separate from main Hopper stack). The `gpu_namer_vlm.py` script handles render-on-demand + resumable extraction.
 - **LLM (compose)**: **Qwen3-32B** via local llama.cpp. Frozen config (hard-won over 14 iters — DO NOT regress):
   - `enable_thinking:false` + parser strips `<think>` tags + ```json fences

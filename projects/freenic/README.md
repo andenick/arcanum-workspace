@@ -32,9 +32,9 @@ Works identically from R (`duckdb`/`arrow`), the `duckdb` CLI, and browser DuckD
 
 | Directory | What it holds |
 |---|---|
-| [`pipeline/`](pipeline/) | ingestion + validation: a 74-script phase pipeline, 21 read-only test suites, the verified [`reconstruction/`](pipeline/reconstruction/) module, quarterly refresh protocol (`REFRESH.md`) |
-| [`site/`](site/) | the freenic.org explorer (FastAPI + Jinja): data + variable-dictionary explorers, curated-slice serving, self-hosting guide (`DATA_SERVING.md`) |
-| [`release-tools/`](release-tools/) | release packaging + v1.0.0 metadata (manifest, changelog, citation, license, codebook, croissant, checksums) |
+| ``pipeline/`` | ingestion + validation: a 74-script phase pipeline, 21 read-only test suites, the verified ``reconstruction/`` module, quarterly refresh protocol (`REFRESH.md`) |
+| ``site/`` | the freenic.org explorer (FastAPI + Jinja): data + variable-dictionary explorers, curated-slice serving, self-hosting guide (`DATA_SERVING.md`) |
+| ``release-tools/`` | release packaging + v1.0.0 metadata (manifest, changelog, citation, license, codebook, croissant, checksums) |
 
 Large artifacts (warehouse DuckDB, full Parquet release, curated slice) are not committed — served from data.freenic.org and cataloged in the release manifest.
 
@@ -52,4 +52,4 @@ The 1976–2026 independent tier **fails its gate and is reported plainly**; sup
 
 ## Refresh, replication, citation
 
-FFIEC publishes each reporting quarter ~75 days after quarter-end; the refresh protocol (acquire → ingest → validate → dictionary → views/coverage → republish) is documented in `pipeline/REFRESH.md`. The [`anu/`](anu/) directory is a complete data-replication package (`series_registry.json`, fetch/process/validate scripts, Data Provenance Records — see `anu/README.md`). Cite: Anderson, Nicholas. *FreeNIC: Free National Information Center* (v1.0.0), 2026. Upstream sources carry their own terms (most US-government public-domain; the "Failing Banks" deposit CC0 1.0, NY-Fed slice under NY-Fed Terms of Use — full posture in `LICENSE_POSTURE.md`).
+FFIEC publishes each reporting quarter ~75 days after quarter-end; the refresh protocol (acquire → ingest → validate → dictionary → views/coverage → republish) is documented in `pipeline/REFRESH.md`. The ``anu/`` directory is a complete data-replication package (`series_registry.json`, fetch/process/validate scripts, Data Provenance Records — see `anu/README.md`). Cite: Anderson, Nicholas. *FreeNIC: Free National Information Center* (v1.0.0), 2026. Upstream sources carry their own terms (most US-government public-domain; the "Failing Banks" deposit CC0 1.0, NY-Fed slice under NY-Fed Terms of Use — full posture in `LICENSE_POSTURE.md`).

@@ -21,7 +21,7 @@ The site does not embed its data. At runtime it reads a **published data package
 | `BUNDLE_MANIFEST.csv` | every bundle member's bytes + SHA-256 |
 | `CITATION.cff`, `llms.txt`, `TERMS.md` | citation record, agent-readable site map, terms |
 
-The package is not distributed in the repository — but it can be **rebuilt from public sources** via the [`anu/`](anu/) replication package (registry for all 331 series, per-source fetchers, provenance records, validator).
+The package is not distributed in the repository — but it can be **rebuilt from public sources** via the ``anu/`` replication package (registry for all 331 series, per-source fetchers, provenance records, validator).
 
 ## Serving it honestly
 

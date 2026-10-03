@@ -97,7 +97,7 @@ Record in `page_manifest.json`: `qa_status`, `qa_notes` (free text), `escalation
 
 - **Model**: `datalab-to/chandra-ocr-2` (~4B params)
 - **Quantization**: NF4 via BitsAndBytes
-- **VRAM**: ~3.2 GB model + ~4.7-6 GB peak (RTX 3080 10GB)
+- **VRAM**: ~3.2 GB model + ~4.7-6 GB peak (a 10 GB-class consumer GPU)
 - **Environment**: `chandra2`
 - **Engine**: `chandra_engine.py` (consolidated, v1.1)
 - **Inference**: `prompt_type="ocr_layout"`, `max_output_tokens=8192`

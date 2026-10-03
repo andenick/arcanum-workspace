@@ -22,8 +22,8 @@ Nothing on the site is fabricated or interpolated; where a source publishes impu
 ## The numbers behind the site
 
 - **15 routes**, every one backed by real data — no "coming soon" placeholders
-- **20 data CSVs** in `app/data/` (22 published files total, including the data dictionary and citation record), each listed with download URL and SHA-256 in [`DATA_MANIFEST.md`](DATA_MANIFEST.md)
-- **Replication package** ([`anu/`](anu/)): 27 series, loaders → processors → validators, rebuilding every published CSV from the original public sources (`make all`)
+- **20 data CSVs** in `app/data/` (22 published files total, including the data dictionary and citation record), each listed with download URL and SHA-256 in ``DATA_MANIFEST.md``
+- **Replication package** (``anu/``): 27 series, loaders → processors → validators, rebuilding every published CSV from the original public sources (`make all`)
 
 Known gaps are documented on the site's methodology page: no standard ACS 1-year estimates exist for 2020 (a one-year hole in five series families), the 2025 unemployment point is a six-month average, and the data dictionary covers 12 of the 20 data CSVs.
 

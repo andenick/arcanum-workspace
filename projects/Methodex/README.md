@@ -50,7 +50,7 @@ METHODEX_PUBLIC_ONLY=1 python src/methodex_mcp.py demo                    # CLI 
 
 ## Anu replication package
 
-The [`anu/`](anu/) directory contains a complete data-replication package: `series_registry.json` (the canonical data contract), fetch/process/validate scripts, and Data Provenance Records. See [`anu/README.md`](anu/README.md) to reproduce the data.
+The ``anu/`` directory contains a complete data-replication package: `series_registry.json` (the canonical data contract), fetch/process/validate scripts, and Data Provenance Records. See ``anu/README.md`` to reproduce the data.
 
 ## License
 

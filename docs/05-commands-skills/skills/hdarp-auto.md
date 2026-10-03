@@ -12,7 +12,7 @@ part-of: HDARP Framework v6.3
 # autohdarp Skill
 
 ## Description
-Automated HDARP pipeline using **Sraffa 4.0** document-adaptive OCR. Each page is classified independently: digital pages get instant PyMuPDF extraction, scanned pages get EasyOCR GPU with mandatory Agent QA, and only pages that fail QA are escalated to Chandra 2 (NF4 on RTX 3080). Three rounds of benchmarking proved that Chandra Solo outperforms all consensus approaches, but Sraffa 4.0 reserves Chandra for escalation only to optimize speed and GPU usage.
+Automated HDARP pipeline using **Sraffa 4.0** document-adaptive OCR. Each page is classified independently: digital pages get instant PyMuPDF extraction, scanned pages get EasyOCR GPU with mandatory Agent QA, and only pages that fail QA are escalated to Chandra 2 (NF4-quantized local GPU). Three rounds of benchmarking proved that Chandra Solo outperforms all consensus approaches, but Sraffa 4.0 reserves Chandra for escalation only to optimize speed and GPU usage.
 
 ## Trigger
 User requests:
@@ -95,7 +95,7 @@ User requests:
 
 ## Deployment Options
 
-### Local (RTX 3080 10GB)
+### Local (consumer GPU)
 - Chandra 2 with NF4 quantization: ~229s/page
 - Suitable for small batches and quality-critical documents
 - Setup: `CHANDRA2_LOCAL_SETUP.md`
@@ -118,7 +118,7 @@ Current implementation:
 - ✅ Per-page classification: digital / scanned / mixed
 - ✅ PyMuPDF digital extraction (instant, 100%)
 - ✅ EasyOCR GPU mandatory for scanned pages
-- ✅ Chandra 2 local inference (NF4 on RTX 3080) — escalation only
+- ✅ Chandra 2 local inference (NF4 on a local consumer GPU) — escalation only
 - ✅ Agent QA protocol on every scanned page
 - ✅ FULL_TEXT.md assembly with provenance
 - ✅ page_manifest.json with per-page QA metadata
