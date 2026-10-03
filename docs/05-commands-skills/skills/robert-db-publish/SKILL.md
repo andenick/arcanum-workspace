@@ -14,7 +14,7 @@ part-of: Robert Database Framework v1.0
 
 Turn an audited database into a versioned, self-describing, publishable package and
 mirror it to the configured destination. Publish is the only stage permitted to
-write outside `RobertDB` (to `publish.mirror_to`), and only after the
+write outside `Technical/RobertDB/` (to `publish.mirror_to`), and only after the
 audit gate passes.
 
 ## Purpose
@@ -50,7 +50,7 @@ publish/<corpus_slug>-<vX.Y>/
 2. **Build + mirror.**
    ```bash
    PYTHONIOENCODING=utf-8 python rdb_publish.py \
-       --config <P>/robertdb_config.json \
+       --config <P>/Technical/RobertDB/robertdb_config.json \
        --version vX.Y [--allow-warn] [--skip-mirror]
    ```
    This regenerates the views, assembles the package layout above, runs the leak
@@ -58,11 +58,11 @@ publish/<corpus_slug>-<vX.Y>/
    `publish.mirror_to`. Use `--skip-mirror` to build the package for inspection
    without touching the mirror destination.
 3. **Leak scrub (severity by `publish.public`).** The scrub looks for workspace
-   paths (`...`), absolute machine paths, API keys, and Arcanum-internal
+   paths, absolute machine paths, API keys, and Arcanum-internal
    references in every published file.
    - `public: true` → any leak is **FAIL-severity**: the publish aborts. Fix the
      source view/codebook (never just delete the line from the package) and rebuild.
-   - `public: false` (internal corpora, e.g. Volcker) → leaks are WARN-severity and
+   - `public: false` (internal corpora) → leaks are WARN-severity and
      reported, but internal paths in an internal package are tolerated.
 4. **Mirror grep-verify discipline (MANDATORY).** A registry or a script's
    "mirrored OK" message is **not** proof. After mirroring, verify the bytes landed:

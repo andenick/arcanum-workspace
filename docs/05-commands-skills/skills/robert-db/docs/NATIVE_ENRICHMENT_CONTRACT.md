@@ -24,8 +24,8 @@ Emitted **inside the per-document KB folder**, alongside the existing 4-type out
 never overwrite `CSV_Tables/`, `Tables/*.md`, `FULL_TEXT*.md`, `equations/`, `figures/`.
 
 ```
-<doc>/RDB_METADATA.jsonl                  # whole-doc processors: one file, one line per table
-<doc>/RDB_METADATA_chunks_NNN_NNN.jsonl   # chunk-range processors: one shard per chunk-range
+Knowledge_Base/<doc>/RDB_METADATA.jsonl                  # whole-doc processors: one file, one line per table
+Knowledge_Base/<doc>/RDB_METADATA_chunks_NNN_NNN.jsonl   # chunk-range processors: one shard per chunk-range
 ```
 
 Chunk-range shards mirror the existing `FULL_TEXT_chunks_NNN_NNN.md` naming so a dense yearbook
@@ -40,7 +40,7 @@ chunk-range is split into shards, never trimmed of fields).
 ```jsonc
 {
   // --- identity (REQUIRED) ---
-  "source_relpath": "<doc>/CSV_Tables/table_006_010_02.csv",  // natural key: CSV path
+  "source_relpath": "Knowledge_Base/<doc>/CSV_Tables/table_006_010_02.csv",  // natural key: CSV path
                                                                               // relative to PROJECT ROOT
   "doc_id": "<doc folder name>",            // REQUIRED, must equal the KB folder name verbatim
 
@@ -148,12 +148,24 @@ Config gate (`robertdb_config.json`, `kb.native_enrichment`):
 `auto` (default — ingest when present), `off` (force the legacy enrich path), `require` (flag any
 non-marker doc lacking a sidecar via `RDB_META_MISSING`).
 
+> **`source_relpath` anchor — MUST equal the harvest's `project_root` (2026-07-16, layout tolerance).**
+> Harvest mints/matches keys as `csv_path.relative_to(cfg.project_root)` where `cfg.project_root` is
+> `robertdb_config.json.project_root` (the project directory as configured). Any **producer** of a sidecar
+> (Hopper `kbip_backfill.py` / `hopper_to_rdb.py`, HDARP extraction) must anchor `source_relpath` at that
+> **same** project root — NOT at "the parent of `Knowledge_Base`". These differ for projects whose KB is
+> nested under `Technical/` (`<proj>/Technical/Knowledge_Base`): the relpath then correctly
+> includes the `Technical/` segment (`Technical/Knowledge_Base/<doc>/…`). Project-root layouts
+> (`<proj>/Knowledge_Base`) are unchanged (`Knowledge_Base/<doc>/…`). A relpath anchored one level too
+> deep silently fails to match at harvest → the line is an ingest **notice** (§6.2), and the table
+> defaults to `transcription_status=L`. `kbip_backfill.py` now derives the anchor layout-tolerantly
+> (strips a trailing `Technical` segment) and accepts `--project-root` for an explicit override.
+
 ## 7. Backward compatibility
 
 The hook is purely presence-gated. A pre-v6.3 KB has no sidecar → the glob finds nothing → harvest writes
 metadata `mechanical`/`not_captured` exactly as today → `robert-db-enrich` runs its full doc-batch
 recovery. A later native ingest can only **upgrade** (no-downgrade), never clobber, a value an old enrich
-run already set `from_source`. The two in-flight builds (USSR, Volcker) finish the old way; `auto` is a
+run already set `from_source`. The builds in flight when v6.3 landed finish the old way; `auto` is a
 no-op for them.
 
 ## 8. Size discipline

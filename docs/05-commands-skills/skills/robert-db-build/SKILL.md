@@ -44,7 +44,7 @@ ORGANIZE, but they may be interleaved. AUDIT strictly gates PUBLISH.
 
 ## Procedure
 
-1. **Load state.** Read `BUILD_STATE.json`
+1. **Load state.** Read `Technical/RobertDB/state/BUILD_STATE.json`
    (`load_build_state` seeds it if absent). It records per-stage status under
    `stages.{init,harvest,enrich,organize,audit,publish}`.
 2. **Run stages in order**, invoking each sub-skill. After each stage completes,
@@ -63,7 +63,7 @@ ORGANIZE, but they may be interleaved. AUDIT strictly gates PUBLISH.
 ## Yield triggers (per orchestration-cadence)
 
 Stay continuous and in-turn. End the turn / hand back ONLY when:
-1. **Disk guard trips** (C: < 20 GB) — pause and report.
+1. **Disk guard trips** (system drive < 20 GB free) — pause and report.
 2. **A user-blocking decision is required** — e.g. taxonomy ratification, an
    ambiguous scope, or a publish leak that needs a license/scope call.
 3. **The build is done** — published and mirror grep-verified.

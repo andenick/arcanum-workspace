@@ -33,13 +33,13 @@ chain by `source_md5` (the read-method spine).
 
 ```bash
 /kb-integrate-pipeline [project] [--engine {hdarp|hopper}]
-/kb-integrate-pipeline Volcker                 # Full pipeline on Volcker (defaults --engine hdarp)
-/kb-integrate-pipeline Volcker --skip-backup
-/kb-integrate-pipeline Jane --engine hopper    # Jane KB was read by Hopper Line v2
-/kb-integrate-pipeline ALL                     # All projects
+/kb-integrate-pipeline <P>                      # Full pipeline on <P> (defaults --engine hdarp)
+/kb-integrate-pipeline <P> --skip-backup
+/kb-integrate-pipeline <P> --engine hopper      # a KB read by Hopper Line v2
+/kb-integrate-pipeline ALL                      # All projects
 
 # Alias (identical behavior, back-compat):
-/hdarp-integrate-pipeline Volcker
+/hdarp-integrate-pipeline <P>
 ```
 
 ### `--engine {hdarp|hopper}` (default `hdarp`)
@@ -52,7 +52,7 @@ accordingly. `--engine` sets the default/expected method for docs that lack a `R
 - `--engine hdarp` (default): docs without a self-declared method default to `read_method=HDARP`. **This is the
   legacy behavior** — every existing HDARP project re-integrates identically.
 - `--engine hopper`: docs without a self-declared method default to `read_method=Hopper` (for a freshly
-  Hopper-extracted KB like Jane whose `/hopper-integrate` on-ramp already tagged the docs).
+  Hopper-extracted KB whose `/hopper-integrate` on-ramp already tagged the docs).
 
 Mixed-engine KBs are fully supported: the per-doc `read_method` always wins over the `--engine` default.
 
@@ -88,8 +88,8 @@ This skill is the INTEGRATE step for any read engine.
 5. **`/kb-integrate-pipeline`** (alias `/hdarp-integrate-pipeline`) — catalog, classify, crossref, Robert sync
 
 **Hopper lane** (local-GPU Hopper Line v2):
-1. `/hopper` — extract a PDF/folder offline on the RTX 5090 (4-artifact output)
-2. `/hopper-integrate` — on-ramp: LAND extraction into `<doc>`, TAG
+1. `/hopper` — extract a PDF/folder offline on a local consumer-GPU machine (4-artifact output)
+2. `/hopper-integrate` — on-ramp: LAND extraction into `<P>/Knowledge_Base/<doc>`, TAG
    `read_method=Hopper` (writes `READ_METHOD.json`, `manifest.read_method`, FULL_TEXT header), hand off
 3. **`/kb-integrate-pipeline --engine hopper`** — same 7 phases, `read_method=Hopper` rows
 
@@ -99,7 +99,7 @@ extraction quality has been validated, regardless of read method.
 
 ### Downstream
 
-Once integration completes, the project's catalogs are ready for **`robert-db-build`** (Robert Database Framework v1.0), which consumes these catalogs to turn the Knowledge_Base into a research-grade per-project table database (SQLite canonical + honest per-field provenance + publishable packages). The KBIP v1.0 catalogs carry`read_method` through so `documents.process_type` lands correctly (HDARP docs → `HDARP`, Hopper docs → `Hopper`) — with **no schema change** between an HDARP project and a Hopper project. See `ROBERT_DATABASE_FRAMEWORK_OVERVIEW.md`.
+Once integration completes, the project's catalogs are ready for **`robert-db-build`** (Robert Database Framework v1.0), which consumes these catalogs to turn the Knowledge_Base into a research-grade per-project table database (SQLite canonical + honest per-field provenance + publishable packages). The KBIP v1.0 catalogs carry `read_method` through so `documents.process_type` lands correctly (HDARP docs → `HDARP`, Hopper docs → `Hopper`) — with **no schema change** between an HDARP project and a Hopper project. See `ROBERT_DATABASE_FRAMEWORK_OVERVIEW.md`.
 
 ## Pipeline Phases (Automatic)
 
@@ -122,12 +122,12 @@ carries and whether the Hopper-only columns are populated (blank for HDARP).
 - **Parallel Agents**: 5 Sonnet agents per batch for catalog phase
 - **Checkpointing**: State saved after each phase
 - **Resumable**: Can resume from last completed phase if interrupted
-- **State File**: `PIPELINE_STATE.json`
+- **State File**: `Technical/HDARP_Integration/PIPELINE_STATE.json`
 
 ## Output Structure
 
 ```
-{Project}/HDARP_Integration
+{Project}/Technical/HDARP_Integration/
 |-- PIPELINE_STATE.json          # Pipeline execution state
 |-- BACKUP_MANIFEST.json         # Phase 1: File inventory
 |-- DOCUMENT_AUDIT.csv           # Phase 2: Document audit
@@ -142,7 +142,7 @@ carries and whether the Hopper-only columns are populated (blank for HDARP).
 `-- PIPELINE_COMPLETE.md         # Summary report
 ```
 
-> The per-doc `READ_METHOD.json` lives in each `<doc>` folder (written by the extraction
+> The per-doc `READ_METHOD.json` lives in each `Knowledge_Base/<doc>/` folder (written by the extraction
 > on-ramp — `/hopper-integrate` for Hopper, the W7 back-tag pass for legacy HDARP), NOT in
 > `HDARP_Integration/`. The pipeline READS it; it does not author it. When absent, `read_method` defaults
 > per `--engine` (HDARP by default).
@@ -159,12 +159,27 @@ carries and whether the Hopper-only columns are populated (blank for HDARP).
 
 ### Phase 2: AUDIT
 
-- Enumerates all document directories
+- Enumerates all document directories — **EXCLUDING any child of `Knowledge_Base/` whose name begins
+  with `_`.** These are sibling *layers* and control trees, not documents: `_OCR_Only/` (the HDARP v6.4
+  Hybrid verbatim body-text layer), `_repair_backups/`, `_quarantined_partials/`,
+  `_superseded_duplicates/`. Counting one writes a phantom row into `DOCUMENT_AUDIT.csv` and inflates
+  the document count into every downstream catalog. The Robert DB harvest script already enforces this
+  via its `_excluded_dir`; the asymmetry between the two sides was the hazard.
+  **Verify after the audit: no `document_id` in `DOCUMENT_AUDIT.csv` starts with `_`.**
 - Checks for: FULL_TEXT.md (primary, Sraffa 4.0), Text/ (legacy), CSV_Tables/, completion markers
 - **Resolves `read_method` / `read_version` / `models_used` / `source_md5`** per the read-method spine
   (`READ_METHOD.json` → `manifest.read_method` → `--engine` default). Resolution is per-document.
 - Records completeness status for each document
 - Outputs: DOCUMENT_AUDIT.csv, COMPLETION_GAPS.md
+
+**Schema v1.1 — the three Hybrid columns (added 2026-08-27, HDARP v6.4).** Append-only; v1.0 readers
+are unaffected because the columns are added at the end and `schema_version` distinguishes them.
+
+| Column | Values | Why it must be in the catalog |
+|---|---|---|
+| `extraction_method` | `verbatim` \| `analytical_digest` | **The single most consequential fact about a document's body text, and it was not being recorded anywhere a consumer could see it.** In one production corpus, 353 of 384 documents are `analytical_digest` — a paraphrase, not the text. A downstream user quoting from a digest as if it were the source would be quoting words the author never wrote. The HDARP processing rule ("Hybrid body text = two layers") already requires this be recorded per document; this is where it becomes visible. |
+| `ocr_layer_path` | relpath to `_OCR_Only/<short_id>/` or empty | Links the document to its verbatim layer **without a second catalog row** — a second row keyed on the same `source_md5` would break the idempotent md5 key KBIP relies on. |
+| `ocr_layer_complete` | `true` \| `false` \| empty | `false` = pages remain in `_OCR_Only/_GPU_OCR_QUEUE.md` awaiting the Sraffa 4.0 GPU pass. Records the gap rather than implying coverage the layer does not have. |
 
 **`DOCUMENT_AUDIT.csv` — KBIP catalog schema v1.0 (frozen columns, build plan §3.4):**
 
@@ -172,7 +187,8 @@ carries and whether the Hopper-only columns are populated (blank for HDARP).
 document_id, document_name, source_md5, read_method, read_version, models_used,
 has_full_text, full_text_chars, chunk_markers, csv_count, equation_count, figure_count,
 chart_extracted_count, entity_count, page_count, born_digital_fraction, mean_confidence,
-quality_score, status, batch_id, processing_date, schema_version, notes
+quality_score, status, batch_id, processing_date, schema_version, notes,
+extraction_method, ocr_layer_path, ocr_layer_complete
 ```
 
 This is the **union** of the HDARP and Hopper dialects. It is a SUPERSET of the legacy HDARP audit:
@@ -263,7 +279,7 @@ HDARP project).
 > `PROCESSING_LOG`/`KB_CATALOG`/`PROVENANCE_LEDGER` row-writer is implemented in build-plan item W5.
 
 - Registers project in PROJECT_REGISTRY.json (v2.0 schema — see `ROBERT_PDF_LIBRARY_V2_STANDARD.md`)
-- Copies catalogs to Robert/HDARP_Integration
+- Copies catalogs to `Robert/HDARP_Integration/`
 - **Writes method-keyed ledger rows, keyed by `source_md5`** (the read-method spine; build plan §3.5):
   - `PROCESSING_LOG`: `process_type` / `processing_protocol` = the doc's resolved `read_method`
     (HDARP docs → `HDARP`; Hopper docs → `Hopper`), with `process_version` = the doc's `read_version`.
@@ -279,7 +295,7 @@ HDARP project).
 
 ```json
 {
-  "project": "Volcker",
+  "project": "<P>",
   "version": "1.0",
   "kbip_version": "1.0",
   "engine_default": "hdarp",

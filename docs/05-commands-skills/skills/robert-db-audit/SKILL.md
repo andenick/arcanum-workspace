@@ -35,9 +35,9 @@ spot-check of real tables against their source context.
 1. **Report (no gate).** Produce the human-readable report first:
    ```bash
    PYTHONIOENCODING=utf-8 python rdb_audit.py \
-       --config <P>/robertdb_config.json
+       --config <P>/Technical/RobertDB/robertdb_config.json
    ```
-   Writes `AUDIT_REPORT.{md,json}`. Exit code is
+   Writes `Technical/RobertDB/audit/AUDIT_REPORT.{md,json}`. Exit code is
    informational here.
 
 2. **Read the AUDIT_REPORT.** It tallies, per check: provenance coverage (every
@@ -52,7 +52,7 @@ spot-check of real tables against their source context.
 3. **Gate.** When you intend to publish, run the gate:
    ```bash
    PYTHONIOENCODING=utf-8 python rdb_audit.py \
-       --config <P>/robertdb_config.json --gate
+       --config <P>/Technical/RobertDB/robertdb_config.json --gate
    ```
    Exit `0` = pass (publish may proceed), exit `1` = fail (fix and re-run). The gate
    fails on any `error`-severity check.
@@ -75,7 +75,7 @@ spot-check of real tables against their source context.
      PYTHONIOENCODING=utf-8 python -c "import sqlite3,sys; c=sqlite3.connect(sys.argv[1]); \
 c.execute(\"update xtables set verification_status=? , updated_at=strftime('%Y-%m-%dT%H:%M:%SZ','now') where table_uid=?\", \
 (sys.argv[2], sys.argv[3])); c.commit(); print('set',sys.argv[3],sys.argv[2])" \
-         <P>/robertdb.sqlite spot_checked_ok <PJ>-T-000123
+         <P>/Technical/RobertDB/robertdb.sqlite spot_checked_ok <PJ>-T-000123
      ```
      Log every such update in the audit notes. Direct DB writes are otherwise
      forbidden — this is the single documented exception.
@@ -83,6 +83,25 @@ c.execute(\"update xtables set verification_status=? , updated_at=strftime('%Y-%
 5. **Recompute + re-gate.** If a spot-check surfaced issues, recompute quality
    (`rdb_quality.py --recompute-all`), regenerate views (`rdb_views.py`), and re-run
    the gate.
+
+## A10 view-freshness (WAL-safe; 2026-07-15)
+
+A10 judges whether `views/DB_MANIFEST.json` reflects the current DB. Its **verdict is
+timestamp-based**: fresh iff `manifest.generated_at >= ` the last content-mutating run.
+Two engine hardenings (from a production A10 reconciliation) make it reliable:
+
+- **`publish` is excluded from "content-mutating"** (alongside `audit`/`views`). A
+  `publish` run recorded after a views regen does not change DB content; counting it
+  spuriously flipped A10 to WARN. If A10 ever WARNs only because of a later publish,
+  the fix is a `rdb_views.py` regen, not a re-harvest.
+- **`content_digest_match` is the signal to trust, not `hash_match_live`.** The raw-file
+  hash (`hash_match_live`) is **always false on a live WAL DB** (checkpoints reorder
+  pages with zero logical change) and is now labelled advisory in the report. A10
+  instead reports a stable, WAL-invariant `content_digest` (ordered hash over every
+  table's `(table_uid, content_sha256)` + row counts, written into the manifest by
+  `rdb_views.py`); `content_digest_match=true` means the views were generated from the
+  same harvested content that is live now. Manifests predating this field show
+  `manifest_content_digest=null` until the next `rdb_views.py` run repopulates it.
 
 ## Outputs
 
