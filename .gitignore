@@ -63,3 +63,5 @@ logs/
 
 # private workspace provenance - never publish
 Technical/
+Inputs/
+Outputs/
