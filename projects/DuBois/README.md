@@ -45,6 +45,9 @@ Data files are not distributed in the repository; fetch them from the live site'
 Count-asserting, not status-code-asserting: each page is checked for the number of records it actually renders against its source CSV, and each chart is confirmed to paint in a real browser. Pages are also checked for real data (no placeholders), offline operation with no CDN, legible charts at every viewport width, and no literal markdown.
 
 **Live at [race.heterodata.org](https://race.heterodata.org).**
+> **Hosting status (2026-10-04):** the self-hosted origin box behind this site has been offline
+> since late September 2026 (boot failure; physical repair in progress). The site returns when the
+> box is back. The repository and data packages below remain fully available.
 
 ## License
 

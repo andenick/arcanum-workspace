@@ -4,7 +4,10 @@
 
 - **Warehouse:** 62 base tables (49 `main` + 6 `catalog` + 7 `dict`) · 52 shaped views · **4.97 billion rows** (4,968,889,667) · coverage span **1782–2026** across 21 source families (data vintage 2026Q1)
 - **Public release (v1.0.0):** **61 files / 13.2 GiB** — 60 Parquet base-table exports plus the 163-year (1863–2026) bank-aggregate spine `long_bank_aggregates_1863_2026.parquet`; every served Parquet's row count equals its warehouse source table's (row-parity gate: 61/61)
-- **Explorer site:** [freenic.org](https://freenic.org) · **Data host:** [data.freenic.org](https://data.freenic.org) · **Current release: v1.1.0** (2026-07-16 — verified Luck/finhist reconstruction, below)
+- **Explorer site:** [freenic.org](https://freenic.org)
+> **Hosting status (2026-10-04):** the self-hosted origin box behind this site has been offline
+> since late September 2026 (boot failure; physical repair in progress). The site returns when the
+> box is back. The repository and data packages below remain fully available. · **Data host:** [data.freenic.org](https://data.freenic.org) · **Current release: v1.1.0** (2026-07-16 — verified Luck/finhist reconstruction, below)
 
 Repo: `andenick/FreeNIC` (verified 2026-10-02). Code MIT; the data compilation CC-BY-4.0.
 
