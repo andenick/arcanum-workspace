@@ -1,6 +1,9 @@
 # Foodberg — Historical Food Price Explorer
 
-**Status: 🟢 LIVE at [foodberg.org](https://foodberg.org)** · State verified against the repository README: 2026-10-02
+**Status: 🟢 LIVE at [foodberg.org](https://foodberg.org)**
+> **Hosting status (2026-10-04):** the self-hosted origin box behind this site has been offline
+> since late September 2026 (boot failure; physical repair in progress). The site returns when the
+> box is back. The repository and data packages below remain fully available. · State verified against the repository README: 2026-10-02
 
 **A full-stack web application for exploring historical food commodity prices, built with React and FastAPI. A multi-source SQLite build covering USDA NASS history, USDA PSD, World Bank Pink Sheet, FAO producer prices, and BLS retail data — with honest coverage badges rather than fabricated trend lines.**
 
