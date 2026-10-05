@@ -167,7 +167,7 @@ error_tail|null, animations, returncode, scene, workdir, cmd}`. Drive the loop o
 - `SKILL.md` — this file (workflow, contract, vision pass, conventions).
 - `LOOP.md` — the executable RITL loop spec (the heart of the skill).
 - `KNOWLEDGE/manim_ce_0190_api.md` — CE 0.19 cheat-sheet + deprecation deltas + failure→fix table.
-- `scripts/render.py` — stdlib-only render wrapper (temp-file → subprocess → progress parse →
+- `scripts/render.py` — stdlib-only render wrapper *(not shipped in this export)* (temp-file → subprocess → progress parse →
   error-tail / last-frame PNG → structured JSON). `--self-test` proves both paths.
 
 ## Provenance

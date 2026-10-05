@@ -58,6 +58,10 @@ scattered government reports.
 
 > **Note on HDARP:** the public [`hdarp`](https://github.com/andenick/hdarp) repo currently ships the **v5.1** OCR-consensus layer, while the protocol documented here is **v6.4** (full v6.4 publication planned).
 
+> **Note on the command/skill templates:** [`docs/05-commands-skills/`](docs/05-commands-skills/) ships
+> operational runbook templates, not runnable code — engine scripts and internal standards they
+> reference are not part of this export. See that folder's [README](docs/05-commands-skills/README.md).
+
 ```
    PDFs / scans
         │

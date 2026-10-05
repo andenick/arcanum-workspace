@@ -1,5 +1,6 @@
 # HMDA Analysis
 
+**Repo**: [`andenick/hmda-analysis`](https://github.com/andenick/hmda-analysis) (verified 2026-10-04) — code-only release.
 Code and methodology for analyzing **Home Mortgage Disclosure Act (HMDA)** loan-level
 data and FFIEC Census data: mortgage-lending patterns, geographic disparities,
 tract-boundary corrections across vintages, longitudinal time-series, systemic-bank

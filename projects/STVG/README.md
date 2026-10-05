@@ -1,5 +1,6 @@
 # STVG — Banking CEO Simulation (1945-2040)
 
+**Repo**: [`andenick/stvg`](https://github.com/andenick/stvg) (verified 2026-10-04).
 A historically-calibrated banking CEO simulation built as a C++ statistical engine with a browser-based web demo. Manage a bank through 95 years of American financial history — from post-war stability through deregulation, the GFC, and into the AI age.
 
 ## Quick Start

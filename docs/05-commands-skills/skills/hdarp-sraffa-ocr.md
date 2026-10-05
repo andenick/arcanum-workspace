@@ -61,7 +61,7 @@ Sraffa 4.0 is Arcanum's production OCR system. It classifies each page independe
 |--------|-----------|----------|-------|
 | PyMuPDF | Digital pages (text_density > 0.80) | 100% | Embedded text extraction, instant |
 | EasyOCR (GPU) | Scanned/mixed pages | 90-95% | Primary OCR, GPU mandatory, `['en','ru']` |
-| Chandra 2 (NF4) | Escalated pages only | 95-98% | 5B VLM, lazy-loaded, page-only |
+| Chandra 2 (NF4) | Escalated pages only | 95-98% | 4B VLM, lazy-loaded, page-only |
 
 ---
 

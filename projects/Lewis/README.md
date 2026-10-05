@@ -1,5 +1,6 @@
 # International Economics Analysis Platform
 
+**Repo**: [`andenick/lewis`](https://github.com/andenick/lewis) (verified 2026-10-04).
 **Status**: Research showcase — reference implementation
 **Type**: International Economics Research Platform
 

@@ -26,14 +26,15 @@ All relative paths are relative to **project_root**.
     //   require flag any non-marker doc lacking a sidecar via RDB_META_MISSING
     "native_enrichment": "auto",         // auto | off | require   (optional; default auto)
 
-    // P4.1 LOCAL-MODEL enrichment triage (docs/A4_TRIAGE_HANDOFF.md). DEFAULT OFF:
-    // the Opus-subagent enrich path stays the default. When mode != "off",
+    // P4.1 LOCAL-MODEL enrichment triage (docs/A4_TRIAGE_HANDOFF.md — not shipped). DEFAULT OFF:
+    // the subagent enrich path (Sonnet 5.5 default) stays the default. When mode != "off",
     // robert-db-enrich runs scripts/triage/rdb_triage_route.py FIRST — the ALGRP A4
     // champion (gemma-4-31B, GBNF-constrained) drafts each table's metadata locally;
     // a confidence gate auto-commits the easy majority as JSONL patches (merged by
     // rdb_merge_patches.py unchanged) and routes only low-confidence tables to Opus.
-    //   off   (default) no local triage; full Opus-subagent enrichment as today
-    //   draft local model drafts; gate auto-patches high-conf, queues the rest for Opus
+    //   off   (default) no local triage; full subagent enrichment as today (Sonnet 5.5
+    //                     default; Opus only as a recorded escalation)
+    //   draft local model drafts; gate auto-patches high-conf, queues the rest for Opus escalation
     //   (the harness NEVER launches a GPU/server; the user runs llama-server first)
     "enrich_triage": {                    // optional; entire block defaults to off
       "mode": "off",                      // off | draft

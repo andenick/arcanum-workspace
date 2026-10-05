@@ -1,5 +1,6 @@
 # Erwin — Defense Economics
 
+**Repo**: [`andenick/erwin-web`](https://github.com/andenick/erwin-web) (verified 2026-10-04) — source + replication package; no public site deployment.
 **A research site on the economics of military spending**: US federal defense spending and its composition, cross-country military expenditure, NATO burden-sharing, the arms industry, defense employment, and defense-adjacent manufacturing profit rates.
 
 The site treats military spending not as an exogenous policy variable but as an **endogenous feature of the economy** — the military-Keynesianism and permanent-arms-economy literature. **328 published data series in 17 categories**, every one tracing to a named published source; nothing on the site is synthetic, estimated, or interpolated by the project. Repo: `andenick/erwin-web` (verified 2026-10-02).

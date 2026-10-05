@@ -12,6 +12,8 @@ part-of: "Hopper Line v2 (HL2) — Offline Local VLM Extraction"
 # /hopper-index — Become conversant in Hopper in 5 minutes
 
 This skill is a single redirect: **read `INDEX.md`** before doing any Hopper-related work.
+*(That `INDEX.md` is a workspace-internal file not shipped in this export; the shipped overview is
+[`docs/frameworks/hopper.md`](../../frameworks/hopper.md).)*
 
 `INDEX.md` is structured for fast read:
 

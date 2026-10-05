@@ -17,7 +17,8 @@ requires: hopper
 > It is **lighter** than `/kb-integrate-pipeline` because Hopper already emits the 4 KB artifacts
 > (body text + tables + equations + figures) at extraction time — this on-ramp just **LANDs, TAGs,
 > CATALOGs, wires LEDGERs, builds a SAFE-PACKAGE, and hands off**. It never re-extracts.
-> Canonical standard: `KB_INTEGRATION_PIPELINE_BUILD_PLAN.md` (§4 W3).
+> Canonical standard: `KB_INTEGRATION_PIPELINE_BUILD_PLAN.md` (§4 W3) *(workspace-internal, not shipped;
+readable overview: [`docs/frameworks/kbip.md`](../../../frameworks/kbip.md))*.
 
 ## When to use
 

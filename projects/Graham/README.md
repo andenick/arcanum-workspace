@@ -1,5 +1,6 @@
 # Graham — Securities Analysis & Political Economy
 
+**Repo**: [`andenick/Graham`](https://github.com/andenick/Graham) (verified 2026-10-04).
 ## Overview
 Institutional political economy analysis of corporations, public markets, and the economy using SEC EDGAR filing data. Named for Benjamin Graham's pioneering work in systematic securities analysis — the project uses his analytical rigor but applies it to understanding the structure and dynamics of American capitalism, not stock selection.
 

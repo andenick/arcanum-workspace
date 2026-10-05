@@ -1,5 +1,6 @@
 # Gerhard: Global Public Finance Analysis Platform
 
+**Repo**: [`andenick/Gerhard`](https://github.com/andenick/Gerhard) (verified 2026-10-04).
 Named after **Gerhard Colm** (1897-1968), pioneering public finance economist.
 
 ## Overview
