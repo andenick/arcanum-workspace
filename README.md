@@ -53,6 +53,7 @@ scattered government reports.
 | **Per-project databases** | [`docs/frameworks/robert-db.md`](docs/frameworks/robert-db.md) — Robert DB v1.0 |
 | **Data-series construction** | [`docs/frameworks/anu.md`](docs/frameworks/anu.md) — Anu Framework v12.4 |
 | **Unified knowledge architecture** | [`docs/frameworks/auka.md`](docs/frameworks/auka.md) — AUKA v1.1 |
+| **The agent council (who does what)** | [`docs/council-tools.md`](docs/council-tools.md) — 17 active members |
 | **Skill + command templates** | [`docs/05-commands-skills/`](docs/05-commands-skills/) |
 
 > **Note on HDARP:** the public [`hdarp`](https://github.com/andenick/hdarp) repo currently ships the **v5.1** OCR-consensus layer, while the protocol documented here is **v6.4** (full v6.4 publication planned).
