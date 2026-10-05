@@ -15,7 +15,8 @@ requires: a dedicated local-GPU venv (torch cu128-class, sm_120), the hopperline
 Run an **offline, zero-API** PDF→structured-data engine on a **local consumer-GPU machine (32 GB VRAM
 class, sm_120)**. One command: PDF/folder in → HDARP-style **4-artifact** output (body text + tables +
 equations + figures) + `content_list.json` + chart_data + an Anu-ready KB. Definitive spec:
-`HOPPER_LINE_V2_PROTOCOL.md`.
+`HOPPER_LINE_V2_PROTOCOL.md` *(workspace-internal, not shipped in this export; readable
+overview: [`docs/frameworks/hopper.md`](../../../frameworks/hopper.md))*.
 
 > **Naming rule (hard):** this is **Hopper / the Hopper Line**, a *distinct engine from HDARP* (which is the
 > cloud Claude Read-tool agent). **Never** call any local-model build "HDARP", "Local-HDARP", or "Sraffa N".
@@ -67,7 +68,7 @@ Pick the **profile** by corpus: `general` (any PDF) · `ussr` (Cyrillic scanned 
 ### 3. Validate
 ```powershell
 & $py validate.py <Outputs>        # offline KB self-validation (chunk markers, 4 artifacts)
-& $py ..\algrp\harness\race_e2e.py                # A.6 born-digital content-recall >= 0.90 (CI guard)
+& $py harness/race_e2e.py                           # A.6 guard (engine script, not shipped in this export)
 ```
 A failing A.6 means a born-digital page lost content — investigate before trusting the run.
 
@@ -84,6 +85,6 @@ Flag any QUARANTINED (corrupt) or low-confidence docs explicitly.
 ## Rules
 - **Foreground only** (per workspace CLAUDE.md); 1–2 GPU models per invocation.
 - Estimated chart data is **flagged, never primary**. Low-confidence pages are surfaced, not hidden.
-- Real-gold regression gate before trusting champion changes: `..\algrp\harness\hl2_regress.py`.
+- Real-gold regression gate before trusting champion changes: `harness/hl2_regress.py` *(engine script, not shipped)*.
 - This is a **billed-nothing, fully-local** path — ideal for quota-blocked / sensitive / bulk work that
   HDARP (cloud) can't do.

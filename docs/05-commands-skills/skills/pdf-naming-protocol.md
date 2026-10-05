@@ -74,7 +74,8 @@ For each PDF in `_PDF_LIBRARY/<Project>/` matching scope:
   - `gpu_compose.py` (Qwen3-32B composer; outputs `name_proposal_local.csv`)
   - `apply_naming_v2.py` (atomic rename + symlink repoint + ledger; dry-run by default, `--apply` to execute; reversible by md5)
   - `_n1_verify.py` (tie-out check after rename — MUST stay clean: 0 dangling, 0 reg-missing, 0 mismatch)
-- **Reference implementation backbone**: `GPU_NAMING_PIPELINE_PLAN.md` (spec) + `GPU_NAMING_PROGRESS.md` (Iter 1–14 execution log with all the lessons)
+- **Reference implementation backbone** *(workspace-internal, not shipped in this export)*:
+  `GPU_NAMING_PIPELINE_PLAN.md` (spec) + `GPU_NAMING_PROGRESS.md` (Iter 1–14 execution log with all the lessons)
 
 ## Filename rules (output form)
 

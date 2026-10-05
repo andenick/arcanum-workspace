@@ -105,7 +105,8 @@ constructed-series layer on top of it.
 
 ## Pointers
 
-- **Schema** — `robertdb_schema.sql`
+- **Framework overview (shipped in this repo)** — [`docs/frameworks/robert-db.md`](../../../frameworks/robert-db.md)
+- **Schema** — `robertdb_schema.sql` *(engine artifact, not shipped)*
 - **Config spec** — `CONFIG_SPEC.md`
 - **Patch contract** — `PATCH_CONTRACT.md`
 - **Engine scripts** — `rdb_*.py` (single canonical

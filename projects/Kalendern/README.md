@@ -1,5 +1,6 @@
 # Kalendern 1936 — Stockholm Tax Directory Extraction
 
+**Repo**: [`andenick/kalendern-1936`](https://github.com/andenick/kalendern-1936) (verified 2026-10-04).
 Pipeline code to structure-extract Swedish *Taxeringskalender* (tax directories) into
 per-person tax records. The flagship target is the 1936 Bonnier *Taxeringskalender* for
 Greater Stockholm (high-income taxpayers, A–Ö by surname, two columns per page); the same

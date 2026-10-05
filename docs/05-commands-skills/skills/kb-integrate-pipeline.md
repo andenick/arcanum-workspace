@@ -19,7 +19,8 @@ aliases: [hdarp-integrate-pipeline]
 > `manifest.json.read_method`, defaulting to `HDARP` when absent) and emits the **KBIP catalog schema v1.0**
 > (a method-tagged SUPERSET of the old catalogs). **Existing HDARP projects are unaffected:** every change is
 > strictly additive (new columns/catalogs blank or `read_method=HDARP`), never a change to existing data.
-> Canonical standard: `KB_INTEGRATION_PIPELINE_BUILD_PLAN.md`.
+> Canonical standard: `KB_INTEGRATION_PIPELINE_BUILD_PLAN.md` *(workspace-internal, not shipped; readable
+overview: [`docs/frameworks/kbip.md`](../../frameworks/kbip.md))*.
 
 ## Description
 

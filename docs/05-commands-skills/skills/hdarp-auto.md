@@ -59,7 +59,7 @@ User requests:
 
 ## Model Configuration
 
-### Primary (Local): Chandra OCR 2 (5B)
+### Primary (Local): Chandra OCR 2 (4B)
 - Checkpoint: `datalab-to/chandra-ocr-2`
 - VRAM: ~3.2 GB (NF4) or ~9.7 GB (BF16)
 - Environment: `chandra2` (Python 3.11, CUDA 12.8)
@@ -75,7 +75,7 @@ User requests:
 - Use when: batch throughput needed or Chandra unavailable
 
 ### Deprecated: Chandra 1 (9B)
-- `chandra/chandra-ocr-9b` -- replaced by Chandra 2 (5B), which is smaller, faster, and more accurate
+- `chandra/chandra-ocr-9b` -- replaced by Chandra 2 (4B), which is smaller, faster, and more accurate
 
 ## Usage Examples
 
